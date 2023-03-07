@@ -6,7 +6,8 @@ uses
   frmNominate in 'frmNominate.pas' {Nominate},
   dmSCM in 'dmSCM.pas' {SCM: TDataModule},
   dlgSCMOptions in 'dlgSCMOptions.pas' {scmOptions},
-  scmMemberNom in 'scmMemberNom.pas';
+  scmMemberNom in 'scmMemberNom.pas',
+  SCMExeInfo in 'SCMExeInfo.pas';
 
 {$R *.res}
 

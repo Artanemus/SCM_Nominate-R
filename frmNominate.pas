@@ -112,6 +112,7 @@ type
     Image1: TImage;
     Label3: TLabel;
     Layout9: TLayout;
+    Label4: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure actnConnectExecute(Sender: TObject);
     procedure actnConnectUpdate(Sender: TObject);
@@ -171,8 +172,11 @@ type
 //    procedure scmUpdatelbxNominateChecks;
 //    procedure scmUpdatelbxNominateQualified;
 
+    procedure GetSCMVerInfo();
+
   public
     { Public declarations }
+
     procedure scmOptionsLoad;
     procedure scmUpdateHideClosedSessions;
     procedure scmUpdateTabSheetsImages;
@@ -197,11 +201,11 @@ uses
 {$ENDIF}
   // FOR scmLoadOptions
   System.IniFiles, System.IOUtils, dlgSCMOptions, FireDAC.Stan.Param
-  , Data.DB;
+  , Data.DB, SCMExeInfo;
 
 procedure TNominate.actnConnectExecute(Sender: TObject);
 var
-  Thread: TThread;
+    myThread: TThread;
 begin
   if (Assigned(SCM) and (SCM.scmConnection.Connected = false)) then
   begin
@@ -216,7 +220,7 @@ begin
 
     application.ProcessMessages;
 
-    Thread := TThread.CreateAnonymousThread(
+    myThread := TThread.CreateAnonymousThread(
       procedure
       begin
         try
@@ -230,8 +234,8 @@ begin
           btnConnect.Enabled := true;
         end;
       end);
-    Thread.OnTerminate := ConnectOnTerminate;
-    Thread.Start;
+    myThread.OnTerminate := ConnectOnTerminate;
+    myThread.Start;
   end;
 
 end;
@@ -677,6 +681,8 @@ begin
     if ((Number > 0) and SCM.IsValidMembershipNum(Number)) then
     begin
       // Get the member's ID from membership number
+      // BSA FIX: 2023.03.07
+      // The member must NOT be archived. Must be active or is a swimmer.
       fCurrMemberID := SCM.GetMemberID(Number);
       // Is the MemberID VALID?
       if fCurrMemberID <> 0 then
@@ -720,7 +726,7 @@ begin
 {$IFDEF MSWINDOWS}
         MessageBeep(MB_ICONERROR);
 {$ENDIF}
-        lblConnectionStatus.Text := 'Unexpected error. Member''s ID not found.';
+        lblConnectionStatus.Text := 'Member''s ID not found or not a swimmer or not active or is archived.';
       end;
     end
     else
@@ -728,7 +734,7 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblConnectionStatus.Text := 'The membership number doesn''t exist.';
+      lblConnectionStatus.Text := 'The membership number wasn''t found.';
     end;
   end
 end;
@@ -787,6 +793,8 @@ begin
 
   // Toggle button state.
   scmUpdateButtonState;
+  // Label showing application and database version
+  GetSCMVerInfo;
 
 end;
 
@@ -797,8 +805,9 @@ begin
   begin
     // test for DONE.
     if edtMembershipNum.ReturnKeyType = TReturnKeyType.Done then
-      // Post the time to the database.
-      // actn(self);
+    begin
+      btnNumPadOKClick(Self);
+    end;
   end;
 end;
 
@@ -1245,6 +1254,30 @@ begin
   begin
     edtMembershipNum.SetFocus;
   end;
+end;
+
+procedure TNominate.GetSCMVerInfo;
+{$IF defined(MSWINDOWS)}
+var
+  myExeInfo: TExeInfo;
+{$ENDIF}
+begin
+  // if connected - display the application version
+  // and the SwimClubMeet database version.
+  if Assigned(SCM) then
+    if SCM.scmConnection.Connected then
+      Label4.Text := 'DB v' + SCM.GetDBVerInfo
+    else
+      Label4.Text := '';
+
+{$IF defined(MSWINDOWS)}
+  // get the application version number
+  myExeInfo := TExeInfo.Create(self);
+  Label4.Text := 'App v' + myExeInfo.FileVersion + ' - ' +
+    Label4.Text;
+  myExeInfo.Free;
+
+{$ENDIF}
 end;
 
 end.

@@ -42,13 +42,16 @@ type
     cmdCreateNomination: TFDCommand;
     cmdDeleteNomination: TFDCommand;
     qryIsEntrant: TFDQuery;
+    qrySCMSystem: TFDQuery;
+    dsSCMSystem: TDataSource;
 
   private const
     SCMCONFIGFILENAME = 'SCMConfig.ini';
 
   private
-    FIsActive: Boolean;
     { Private declarations }
+    FIsActive: Boolean;
+    fDBModel, fDBVersion, fDBMajor, fDBMinor: integer;
 
   public
     { Public declarations }
@@ -56,21 +59,17 @@ type
     function IsMemberEntrant(MemberID, EventID: Integer): Integer;
     function IsMemberQualified(MemberID, DistanceID, StrokeID: Integer)
       : Boolean;
-
-
     function IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
-
-
     function GetMemberID(MemberShipNumber: Integer): Integer;
     function GetMemberFName(MemberID: Integer): String;
+    function GetDBVerInfo: string;
     function LocateEventID(EventID: Integer): Boolean;
-
+    // SQL command
     procedure commandCreateNomination(MemberID, EventID: Integer);
     procedure commandDeleteNomination(MemberID, EventID: Integer);
     procedure commandDeleteSplit(EntrantID: Integer);
     procedure commandDeleteEntrant(EntrantID: Integer);
-
-
+    // Tempory connection methods
     procedure SimpleMakeTemporyFDConnection(Server, User, Password: String;
       OsAuthent: Boolean);
     procedure SimpleSaveSettingString(Section, Name, Value: String);
@@ -153,6 +152,29 @@ begin
   tblSwimClub.Close;
 end;
 
+function TSCM.GetDBVerInfo: string;
+begin
+  result := '';
+  if scmConnection.Connected then
+  begin
+    with qrySCMSystem do
+    begin
+      Connection := scmConnection;
+      Open;
+      if Active then
+      begin
+        fDBModel := FieldByName('SCMSystemID').AsInteger;
+        fDBVersion := FieldByName('DBVersion').AsInteger;
+        fDBMajor := FieldByName('Major').AsInteger;
+        fDBMinor := FieldByName('Minor').AsInteger;
+        result := IntToStr(fDBModel) + '.' + IntToStr(fDBVersion) + '.' +
+          IntToStr(fDBMajor) + '.' + IntToStr(fDBMinor);
+      end;
+      Close;
+    end;
+  end;
+end;
+
 function TSCM.GetMemberFName(MemberID: Integer): String;
 begin
   result := '';
@@ -180,7 +202,7 @@ begin
   if scmConnection.Connected then
   begin
     rtn := scmConnection.ExecSQLScalar
-      ('USE SwimClubMeet; SET NOCOUNT ON; Select MemberID from Member where MembershipNum = :Num',
+      ('USE SwimClubMeet; SET NOCOUNT ON; Select MemberID from Member where MembershipNum = :Num  AND ([IsArchived] <> 1) AND ([IsActive] = 1) AND  ([IsSwimmer] = 1)',
       [MemberShipNumber]);
     if rtn > 0 then
       result := rtn;

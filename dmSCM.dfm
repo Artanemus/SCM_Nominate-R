@@ -1,5 +1,4 @@
 object SCM: TSCM
-  OldCreateOrder = False
   Height = 870
   Width = 717
   object scmConnection: TFDConnection
@@ -214,7 +213,9 @@ object SCM: TSCM
       '      ,[FirstName]'
       '      ,[LastName]'
       '      ,[DOB]'
+      '      ,[IsArchived]'
       '      ,[IsActive]'
+      '      ,[IsSwimmer]'
       '      ,[Email]'
       '      ,[EnableEmailOut]'
       '      ,[GenderID]'
@@ -615,5 +616,20 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
+  end
+  object qrySCMSystem: TFDQuery
+    ActiveStoredUsage = [auDesignTime]
+    Connection = scmConnection
+    SQL.Strings = (
+      'USE SwimClubMeet;'
+      ''
+      'SELECT * FROM SCMSystem WHERE SCMSystemID = 1;')
+    Left = 56
+    Top = 464
+  end
+  object dsSCMSystem: TDataSource
+    DataSet = qrySCMSystem
+    Left = 56
+    Top = 520
   end
 end
