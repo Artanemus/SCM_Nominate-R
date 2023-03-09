@@ -174,8 +174,8 @@ object SCM: TSCM
       #9#9',Distance.Caption'
       #9#9','#39' '#39
       #9#9',Stroke.Caption'
-      '                ,'#39'  '#39
-      '                ,[Event].Caption '
+      '                --,'#39'  '#39
+      '                --,[Event].Caption '
       #9#9') AS Title'
       ''
       '        , [Event].Caption AS Description'

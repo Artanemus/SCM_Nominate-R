@@ -272,10 +272,10 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=Artanemus;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=Nominate;LegalCopyright=Copyright (c) 2019-2022 Artanemus;LegalTrademarks=;OriginalFilename=SCM_Nominate;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0;Comments=Lets swimmers self nominate for events. A SwimClubMeet utility.</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Artanemus;FileDescription=$(MSBuildProjectName);FileVersion=1.0.2.0;InternalName=Nominate;LegalCopyright=Copyright (c) 2019-2022 Artanemus;LegalTrademarks=;OriginalFilename=SCM_Nominate;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0;Comments=Lets swimmers self nominate for events. A SwimClubMeet utility.</VerInfo_Keys>
         <Icon_MainIcon>SCM_Nominate.ico</Icon_MainIcon>
+        <VerInfo_Release>2</VerInfo_Release>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
