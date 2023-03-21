@@ -698,7 +698,7 @@ begin
           begin
             // re-create the ListBox Items and assign objects
             scmBuildlbxItems(fMemberNomObjects);
-            // get the members name ...
+            // get the members fullname ...
             edtMemberFullName.Text := SCM.GetMemberFName(fCurrmemberID);
             // switch to tab showing Nomination ListBox.
             tabMembershipNum.Visible := false;
@@ -813,12 +813,12 @@ end;
 
 procedure TNominate.FormCreate(Sender: TObject);
 var
-  Value, Section, Name: String;
+  AValue, ASection, AName: String;
 
 begin
   // Initialization of params.
   application.ShowHint := true;
-  Section := 'MSSQL_SwimClubMeet';
+  ASection := 'MSSQL_SwimClubMeet';
   AniIndicator1.Visible := false;
   AniIndicator1.Enabled := false;
   btnDisconnect.Visible := false;
@@ -847,19 +847,19 @@ begin
   SCM := TSCM.Create(self);
 
   // Read last successful connection params and load into controls
-  Name := 'Server';
-  SCM.SimpleLoadSettingString(Section, Name, Value);
-  edtServer.Text := Value;
-  Name := 'User';
-  SCM.SimpleLoadSettingString(Section, Name, Value);
-  edtUser.Text := Value;
-  Name := 'Password';
-  SCM.SimpleLoadSettingString(Section, Name, Value);
-  edtPassword.Text := Value;
-  Name := 'OsAuthent';
-  SCM.SimpleLoadSettingString(Section, Name, Value);
+  AName := 'Server';
+  SCM.SimpleLoadSettingString(ASection, AName, AValue);
+  edtServer.Text := AValue;
+  AName := 'User';
+  SCM.SimpleLoadSettingString(ASection, AName, AValue);
+  edtUser.Text := AValue;
+  AName := 'Password';
+  SCM.SimpleLoadSettingString(ASection, AName, AValue);
+  edtPassword.Text := AValue;
+  AName := 'OsAuthent';
+  SCM.SimpleLoadSettingString(ASection, AName, AValue);
 
-  if ((UpperCase(Value) = 'YES') or (UpperCase(Value) = 'TRUE')) then
+  if ((UpperCase(AValue) = 'YES') or (UpperCase(AValue) = 'TRUE')) then
     chkOsAuthent.IsChecked := true
   else
     chkOsAuthent.IsChecked := false;
