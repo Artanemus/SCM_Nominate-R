@@ -4,7 +4,7 @@
         <ProjectVersion>19.5</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -273,9 +273,10 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=Artanemus;FileDescription=$(MSBuildProjectName);FileVersion=1.0.2.0;InternalName=Nominate;LegalCopyright=Copyright (c) 2019-2022 Artanemus;LegalTrademarks=;OriginalFilename=SCM_Nominate;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0;Comments=Lets swimmers self nominate for events. A SwimClubMeet utility.</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Artanemus;FileDescription=$(MSBuildProjectName);FileVersion=1.0.2.1;InternalName=Nominate;LegalCopyright=Copyright (c) 2019-2022 Artanemus;LegalTrademarks=;OriginalFilename=SCM_Nominate;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0;Comments=Lets swimmers self nominate for events. A SwimClubMeet utility.</VerInfo_Keys>
         <Icon_MainIcon>SCM_Nominate.ico</Icon_MainIcon>
         <VerInfo_Release>2</VerInfo_Release>
+        <VerInfo_Build>1</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -295,7 +296,9 @@
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="scmMemberNom.pas"/>
-        <DCCReference Include="SCMExeInfo.pas"/>
+        <DCCReference Include="..\SCM_SHARED\SCMUtility.pas"/>
+        <DCCReference Include="..\SCM_SHARED\SCMSimpleConnect.pas"/>
+        <DCCReference Include="..\SCM_SHARED\exeinfo.pas"/>
         <None Include="SCM_Nominate.todo"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -344,6 +347,18 @@
                 <DeployFile LocalName="Win32\Debug\SCM_Nominate.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SCM_Nominate.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\SCM_Nominate.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>SCM_Nominate.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\SCM_Nominate.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>SCM_Nominate.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

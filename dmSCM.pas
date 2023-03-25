@@ -70,10 +70,10 @@ type
     procedure commandDeleteSplit(EntrantID: Integer);
     procedure commandDeleteEntrant(EntrantID: Integer);
     // Tempory connection methods
-    procedure SimpleMakeTemporyFDConnection(Server, User, Password: String;
-      OsAuthent: Boolean);
-    procedure SimpleSaveSettingString(ASection, AName, AValue: String);
-    procedure SimpleLoadSettingString(ASection, AName: String; var AValue: String);
+//    procedure SimpleMakeTemporyFDConnection(Server, User, Password: String;
+//      OsAuthent: Boolean);
+//    procedure SimpleSaveSettingString(ASection, AName, AValue: String);
+//    procedure SimpleLoadSettingString(ASection, AName: String; var AValue: String);
 
     property IsActive: Boolean read FIsActive;
     procedure ActivateTable();
@@ -322,6 +322,7 @@ end;
 
 {$ENDREGION}
 
+{
 procedure TSCM.SimpleLoadSettingString(ASection, AName: String; var AValue: String);
 var
   ini: TIniFile;
@@ -395,5 +396,6 @@ begin
   end;
 
 end;
+}
 
 end.
