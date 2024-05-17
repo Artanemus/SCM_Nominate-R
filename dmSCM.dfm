@@ -12,10 +12,10 @@ object SCM: TSCM
   end
   object tblSwimClub: TFDTable
     ActiveStoredUsage = [auDesignTime]
-    Active = True
     IndexFieldNames = 'SwimClubID'
     Connection = scmConnection
     FormatOptions.AssignedValues = [fvFmtDisplayNumeric]
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
     UpdateOptions.UpdateTableName = 'SwimClubMeet..SwimClub'
     UpdateOptions.KeyFields = 'SwimClubID'
     TableName = 'SwimClubMeet..SwimClub'
@@ -25,7 +25,6 @@ object SCM: TSCM
       FieldName = 'SwimClubID'
       Origin = 'SwimClubID'
       ProviderFlags = [pfInWhere, pfInKey]
-      ReadOnly = True
     end
     object tblSwimClubCaption: TWideStringField
       FieldName = 'Caption'
@@ -95,6 +94,7 @@ object SCM: TSCM
   end
   object qrySession: TFDQuery
     ActiveStoredUsage = [auDesignTime]
+    Active = True
     IndexFieldNames = 'SwimClubID'
     MasterSource = dsSwimClub
     MasterFields = 'SwimClubID'
@@ -159,33 +159,62 @@ object SCM: TSCM
     UpdateOptions.UpdateTableName = 'SwimClubMeet..Event'
     UpdateOptions.KeyFields = 'EventID'
     SQL.Strings = (
-      'USE SwimClubMeet;'
-      ''
       'SELECT Event.EventID'
-      #9',EventNum'
-      #9',Event.SessionID'
-      #9',EventTypeID'
-      #9',Event.StrokeID'
-      #9',Event.DistanceID'
-      #9',EventStatusID'
-      #9',CONCAT ('
-      '                FORMAT(EventNum, '#39'00'#39')'
-      #9#9','#39' '#39
-      #9#9',Distance.Caption'
-      #9#9','#39' '#39
-      #9#9',Stroke.Caption'
-      '                --,'#39'  '#39
-      '                --,[Event].Caption '
-      #9#9') AS Title'
-      ''
-      '        , [Event].Caption AS Description'
+      '    , Event.EventNum'
+      '    , qryNominees.NomineeCount'
+      '    , qryEntrants.EntrantCount'
+      '    , Event.SessionID'
+      '    , Event.StrokeID'
+      '    , Event.DistanceID'
+      '    , Event.EventStatusID'
+      '    , CONCAT ('
+      '        '#39'#'#39
+      '        , Format([EventNum], '#39'0#'#39')'
+      '        , '#39' - '#39
+      '        , Distance.Caption'
+      '        , '#39' '#39
+      '        , Stroke.Caption'
+      ', '#39'. '#39
+      ', Event.Caption'
+      '        ) AS ListTextStr'
+      '    , CONCAT ('
+      '        '#39'Event '#39
+      '        , Event.EventNum'
+      '        , '#39' - '#39
+      '        , Distance.Caption'
+      '        , '#39' '#39
+      '        , Stroke.Caption'
+      '        , '#39' (NOM:'#39
+      '        , NomineeCount'
+      '        , '#39' ENT:'#39
+      '        , EntrantCount'
+      '        , '#39')'#39
+      '        ) AS ListDetailStr'
       ''
       'FROM Event'
       'LEFT OUTER JOIN Stroke'
       '    ON Stroke.StrokeID = Event.StrokeID'
       'LEFT OUTER JOIN Distance'
       '    ON Distance.DistanceID = Event.DistanceID'
-      ''
+      'LEFT OUTER JOIN EventStatus'
+      '    ON EventStatus.EventStatusID = Event.EventStatusID'
+      'LEFT JOIN ('
+      '    SELECT Count(Nominee.EventID) AS NomineeCount'
+      '        , EventID'
+      '    FROM Nominee'
+      '    GROUP BY Nominee.EventID'
+      '    ) qryNominees'
+      '    ON qryNominees.EventID = Event.EventID'
+      'LEFT JOIN ('
+      '    SELECT Count(Entrant.EntrantID) AS EntrantCount'
+      '        , HeatIndividual.EventID'
+      '    FROM Entrant'
+      '    INNER JOIN HeatIndividual'
+      '        ON Entrant.HeatID = HeatIndividual.HeatID'
+      '    WHERE (Entrant.MemberID IS NOT NULL)'
+      '    GROUP BY HeatIndividual.EventID'
+      '    ) qryEntrants'
+      '    ON qryEntrants.EventID = Event.EventID'
       'ORDER BY Event.EventNum;')
     Left = 40
     Top = 336
@@ -209,7 +238,6 @@ object SCM: TSCM
       '[MemberID]'
       '      ,[MembershipNum]'
       '      ,[MembershipStr]'
-      '      ,[MembershipDue]'
       '      ,[FirstName]'
       '      ,[LastName]'
       '      ,[DOB]'
@@ -220,7 +248,6 @@ object SCM: TSCM
       '      ,[EnableEmailOut]'
       '      ,[GenderID]'
       '      ,[SwimClubID]'
-      '      ,[MembershipTypeID]'
       
         ',SubString(Concat(Member.FirstName, '#39' '#39', Upper(Member.LastName))' +
         ', 0, 60) AS FName'
@@ -339,7 +366,7 @@ object SCM: TSCM
       #9'AND Qualify.GenderID = #tblMember.GenderID'
       'AND IIF(#tblMember.TrialTimePB <= TrialTime, 1, 0) = 1')
     Left = 296
-    Top = 280
+    Top = 176
     ParamData = <
       item
         Name = 'SESSIONSTART'
@@ -463,8 +490,8 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
-    Left = 536
-    Top = 440
+    Left = 296
+    Top = 328
   end
   object cmdDeleteEntrant: TFDCommand
     Connection = scmConnection
@@ -488,8 +515,8 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
-    Left = 536
-    Top = 496
+    Left = 296
+    Top = 384
   end
   object cmdCreateNomination: TFDCommand
     Connection = scmConnection
@@ -542,8 +569,8 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
-    Left = 536
-    Top = 368
+    Left = 296
+    Top = 256
   end
   object cmdDeleteNomination: TFDCommand
     Connection = scmConnection
@@ -576,8 +603,8 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
-    Left = 536
-    Top = 552
+    Left = 296
+    Top = 440
   end
   object qryIsEntrant: TFDQuery
     Connection = scmConnection
@@ -601,8 +628,8 @@ object SCM: TSCM
       
         'WHERE dbo.Entrant.MemberID = @MemberID AND dbo.HeatIndividual.Ev' +
         'entID = @EventID;')
-    Left = 536
-    Top = 616
+    Left = 296
+    Top = 504
     ParamData = <
       item
         Name = 'MEMBERID'

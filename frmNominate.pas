@@ -10,119 +10,113 @@ uses
   FMX.TabControl, System.ImageList, FMX.ImgList, dmSCM, System.Actions,
   FMX.ActnList, System.Rtti, System.Bindings.Outputs, FMX.Bind.Editors,
   Data.Bind.EngExt, FMX.Bind.DBEngExt, Data.Bind.Components, Data.Bind.DBScope,
-  System.Contnrs, scmMemberNom;
+  System.Contnrs, scmMemberNom, ProgramSetting;
 
 type
+
+  TDefaultFont = class(TInterfacedObject, IFMXSystemFontService)
+  public
+    function GetDefaultFontFamilyName: string;
+    function GetDefaultFontSize: Single;
+  end;
+
   TNominate = class(TForm)
-    StyleBook2: TStyleBook;
-    layTopBar: TLayout;
-    layTitle: TLayout;
-    lblSessionTitle: TLabel;
-    lblSwimClubTitle: TLabel;
-    laySummary: TLayout;
-    lblSelectedEntrant: TLabel;
-    lblSelectedEvent: TLabel;
-    layCenteredButtons: TLayout;
-    btnOptions: TButton;
-    btnRefresh: TButton;
-    layFooter: TLayout;
-    SizeGrip1: TSizeGrip;
-    lblConnectionStatus: TLabel;
-    layTabs: TLayout;
-    TabControl1: TTabControl;
-    tabLoginSession: TTabItem;
-    layLoginToServer: TLayout;
-    layConnectButtons: TLayout;
-    btnConnect: TButton;
-    btnDisconnect: TButton;
-    Label7: TLabel;
-    edtServer: TEdit;
-    Label8: TLabel;
-    edtUser: TEdit;
-    Label12: TLabel;
-    edtPassword: TEdit;
-    chkOsAuthent: TCheckBox;
-    Label18: TLabel;
-    AniIndicator1: TAniIndicator;
-    lblAniIndicatorStatus: TLabel;
-    laySelectSession: TLayout;
-    lblSelectSession: TLabel;
-    cmbSessionList: TComboBox;
-    tabMembershipNum: TTabItem;
-    Layout1: TLayout;
-    FlowLayout1: TFlowLayout;
-    btn01: TButton;
-    btn02: TButton;
-    btn03: TButton;
-    FlowLayoutBreak1: TFlowLayoutBreak;
-    btn04: TButton;
-    btn05: TButton;
-    btn06: TButton;
-    FlowLayoutBreak2: TFlowLayoutBreak;
-    btn07: TButton;
-    btn08: TButton;
-    btn09: TButton;
-    FlowLayoutBreak3: TFlowLayoutBreak;
-    btn00: TButton;
-    btnNumPadBackSpace: TButton;
-    btnNumPadClear: TButton;
-    btnNumPadOK: TButton;
-    FlowLayoutBreak5: TFlowLayoutBreak;
-    layMemberShipNum: TLayout;
-    edtMembershipNum: TEdit;
-    Label1: TLabel;
-    tabNominate: TTabItem;
-    ScaledLayout1: TScaledLayout;
-    ImageList1: TImageList;
     ActionList1: TActionList;
     actnConnect: TAction;
     actnDisconnect: TAction;
-    actnRefresh: TAction;
-    actnQualify: TAction;
-    actnSCMOptions: TAction;
-    Timer1: TTimer;
-    Layout2: TLayout;
-    edtMemberFullName: TEdit;
-    Layout3: TLayout;
-    lbxNominate: TListBox;
-    ListBoxItem1: TListBoxItem;
-    ListBoxItem2: TListBoxItem;
-    ListBoxItem3: TListBoxItem;
-    ListBoxItem4: TListBoxItem;
-    ListBoxItem5: TListBoxItem;
-    btnPost: TButton;
-    actnToggleMode: TAction;
     actnNominateOk: TAction;
+    actnQualify: TAction;
+    actnRefresh: TAction;
+    actnSCMOptions: TAction;
+    actnToggleMode: TAction;
+    AniIndicator1: TAniIndicator;
+    BindingsList1: TBindingsList;
+    bsSession: TBindSourceDB;
+    bsSwimClub: TBindSourceDB;
+    btn00: TButton;
+    btn01: TButton;
+    btn02: TButton;
+    btn03: TButton;
+    btn04: TButton;
+    btn05: TButton;
+    btn06: TButton;
+    btn07: TButton;
+    btn08: TButton;
+    btn09: TButton;
+    btnConfirmNominated: TButton;
+    btnConnect: TButton;
+    btnDisconnect: TButton;
+    btnNumPadBackSpace: TButton;
+    btnNumPadClear: TButton;
+    btnNumPadOK: TButton;
+    btnPost: TButton;
+    btnRefresh: TButton;
+    btnToggle: TButton;
+    chkboxShowConfirmationDlg: TCheckBox;
+    chkbSessionVisibility: TCheckBox;
+    chkbUseOsAuthentication: TCheckBox;
+    cmbSessionList: TComboBox;
+    cmbSwimClubList: TComboBox;
+    edtMemberFullName: TEdit;
+    edtMembershipNum: TEdit;
+    edtPassword: TEdit;
+    edtServerName: TEdit;
+    edtUser: TEdit;
+    FlowLayout1: TFlowLayout;
+    FlowLayoutBreak1: TFlowLayoutBreak;
+    FlowLayoutBreak2: TFlowLayoutBreak;
+    FlowLayoutBreak3: TFlowLayoutBreak;
+    FlowLayoutBreak5: TFlowLayoutBreak;
+    Image1: TImage;
+    Label1: TLabel;
+    Label12: TLabel;
+    Label18: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    layConnectButtons: TLayout;
+    layFooter: TLayout;
+    layLoginToServer: TLayout;
+    layMemberShipNum: TLayout;
+    Layout1: TLayout;
+    Layout2: TLayout;
+    Layout3: TLayout;
     Layout4: TLayout;
     Layout5: TLayout;
-    Label2: TLabel;
-    btnToggle: TButton;
-    BindSourceDB1: TBindSourceDB;
-    BindingsList1: TBindingsList;
-    LinkListControlToField1: TLinkListControlToField;
-    LinkPropertyToFieldText: TLinkPropertyToField;
-    BindSourceDB2: TBindSourceDB;
-    LinkPropertyToFieldText2: TLinkPropertyToField;
-    Layout6: TLayout;
-    lblInfoMsg01: TLabel;
     Layout7: TLayout;
-    tabConfimNominated: TTabItem;
     Layout8: TLayout;
-    btnConfirmNominated: TButton;
-    Image1: TImage;
-    Label3: TLabel;
     Layout9: TLayout;
-    Label4: TLabel;
-    procedure FormCreate(Sender: TObject);
+    laySelectSession: TLayout;
+    layTabs: TLayout;
+    lblAniIndicatorStatus: TLabel;
+    lblStatusBar: TLabel;
+    lblSelectSession: TLabel;
+    lblSelectSwimClub: TLabel;
+    lbxNominate: TListBox;
+    LinkListControlToField1: TLinkListControlToField;
+    ScaledLayout1: TScaledLayout;
+    SizeGrip1: TSizeGrip;
+    StyleBook1: TStyleBook;
+    StyleBook2: TStyleBook;
+    tabConfimNominated: TTabItem;
+    TabControl1: TTabControl;
+    tabLoginSession: TTabItem;
+    tabMembershipNum: TTabItem;
+    tabNominate: TTabItem;
+    Timer1: TTimer;
+    bsEvent: TBindSourceDB;
+    LinkListControlToField2: TLinkListControlToField;
     procedure actnConnectExecute(Sender: TObject);
     procedure actnConnectUpdate(Sender: TObject);
     procedure actnDisconnectExecute(Sender: TObject);
     procedure actnDisconnectUpdate(Sender: TObject);
     procedure actnRefreshExecute(Sender: TObject);
     procedure actnRefreshUpdate(Sender: TObject);
-    procedure actnSCMOptionsExecute(Sender: TObject);
-    procedure actnSCMOptionsUpdate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
+    procedure actnToggleModeExecute(Sender: TObject);
+    procedure actnToggleModeUpdate(Sender: TObject);
+    procedure btn00Click(Sender: TObject);
     procedure btn01Click(Sender: TObject);
     procedure btn02Click(Sender: TObject);
     procedure btn03Click(Sender: TObject);
@@ -132,57 +126,52 @@ type
     procedure btn07Click(Sender: TObject);
     procedure btn08Click(Sender: TObject);
     procedure btn09Click(Sender: TObject);
-    procedure btn00Click(Sender: TObject);
+    procedure btnConfirmNominatedClick(Sender: TObject);
     procedure btnNumPadBackSpaceClick(Sender: TObject);
     procedure btnNumPadClearClick(Sender: TObject);
     procedure btnNumPadOKClick(Sender: TObject);
-    procedure actnToggleModeExecute(Sender: TObject);
-    procedure actnToggleModeUpdate(Sender: TObject);
+    procedure btnPostClick(Sender: TObject);
+    procedure chkbSessionVisibilityClick(Sender: TObject);
+    procedure cmbSessionListChange(Sender: TObject);
     procedure edtMembershipNumKeyDown(Sender: TObject; var Key: Word;
       var KeyChar: Char; Shift: TShiftState);
-    procedure TabControl1Change(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure lbxNominateChangeCheck(Sender: TObject);
-    procedure btnPostClick(Sender: TObject);
-    procedure cmbSessionListChange(Sender: TObject);
-    procedure btnConfirmNominatedClick(Sender: TObject);
-
-  private const
-    SCMCONFIGFILENAME = 'SCMConfig.ini';
-    CONNECTIONTIMEOUT = 48;
-
+    procedure TabControl1Change(Sender: TObject);
   private
-    { Private declarations }
-    fShowConfirmationDlg: Boolean;
-    fHideClosedSessions: Boolean;
+  const
+    CONNECTIONTIMEOUT = 48;
+  var
     fConnectionCountdown: Integer;
+    fLoginTimeOut: Integer;
     fCurrMemberID: Integer;
-    fMemberNomObjects: TObjectList; // used by lbxNominate
-    // used to modify notify event - OnChangeeCheck behaviour,
-    // when building the items used by TListBox:lbxNominate
+    fHideClosedSessions: Boolean;
     fIsBuildinglbx: Boolean;
-
-    procedure ConnectOnTerminate(Sender: TObject);
+    fMemberNomObjects: TObjectList; // used by lbxNominate
+    fShowConfirmationDlg: Boolean;
     procedure btnBKSClickTerminate(Sender: TObject);
-    procedure scmUpdateButtonState;
+    procedure ConnectOnTerminate(Sender: TObject);
 
-    procedure scmBuildMemberNomObjects(MemberID: Integer);
-    procedure scmPostNominations;
+    function GetSCMVerInfo(): string;
+    procedure LoadFromSettings; // JSON Program Settings
+    procedure LoadSettings; // JSON Program Settings
+    procedure SaveToSettings; // JSON Program Settings
+
+    // ---- WIP introduced from timekeeper...
+    procedure Status_ConnectionDescription;
+    procedure Status_EventDescription;
+    procedure Update_EntrantStat;
+    procedure Update_Layout;
+    procedure Update_SessionVisibility;
+    procedure Update_TabSheetCaptions;
+    // ---- WIP introduced from timekeeper...
+
     procedure scmBuildlbxItems(objList: TObjectList);
-//    procedure scmUpdatelbxNominateItems;
-//    procedure scmUpdatelbxNominateChecks;
-//    procedure scmUpdatelbxNominateQualified;
+    procedure scmBuildMemberNomObjects(MemberID: Integer);
 
-    procedure GetSCMVerInfo();
-
+    procedure PostNominations;
   public
-    { Public declarations }
-
-    procedure scmOptionsLoad;
-    procedure scmUpdateHideClosedSessions;
-    procedure scmUpdateTabSheetsImages;
-
-    property HideClosedsessions: Boolean read fHideClosedSessions;
-
   end;
 
 var
@@ -200,7 +189,7 @@ uses
   // Shellapi,
 {$ENDIF}
   // FOR scmLoadOptions
-  System.IniFiles, System.IOUtils, dlgSCMOptions, FireDAC.Stan.Param
+  System.IniFiles, System.IOUtils, FireDAC.Stan.Param
   , Data.DB, ExeInfo, SCMSimpleConnect, SCMUtility;
 
 procedure TNominate.actnConnectExecute(Sender: TObject);
@@ -211,30 +200,29 @@ begin
   if (Assigned(SCM) and (SCM.scmConnection.Connected = false)) then
   begin
     lblAniIndicatorStatus.Text := 'Connecting';
-    fConnectionCountdown := CONNECTIONTIMEOUT;
+    fConnectionCountdown := fLoginTimeOut;
     AniIndicator1.Visible := true; // progress timer
     AniIndicator1.Enabled := true; // start spinning
     lblAniIndicatorStatus.Visible := true; // a label with countdown
-    // lock this button - so user won't start another thread!
-    btnConnect.Enabled := false;
     Timer1.Enabled := true; // start the countdown
-
+    actnConnect.Visible := false;
     application.ProcessMessages;
 
     myThread := TThread.CreateAnonymousThread(
       procedure
       begin
+        // can only be assigned if not connected
+        SCM.scmConnection.Params.Values['LoginTimeOut'] :=
+          IntToStr(fLoginTimeOut);
+
         sc := TSimpleConnect.CreateWithConnection(Self, SCM.scmConnection);
         sc.DBName := 'SwimClubMeet'; // DEFAULT
-        sc.SimpleMakeTemporyConnection(edtServer.Text, edtUser.Text,
-          edtPassword.Text, chkOsAuthent.IsChecked);
+        sc.SimpleMakeTemporyConnection(edtServerName.Text, edtUser.Text,
+          edtPassword.Text, chkbUseOsAuthentication.IsChecked);
         Timer1.Enabled := false;
-        lblAniIndicatorStatus.Visible := false;
-        AniIndicator1.Enabled := false;
-        AniIndicator1.Visible := false;
-        btnConnect.Enabled := true;
         sc.Free
       end);
+
     myThread.OnTerminate := ConnectOnTerminate;
     myThread.Start;
   end;
@@ -243,17 +231,19 @@ end;
 
 procedure TNominate.actnConnectUpdate(Sender: TObject);
 begin
-  // toggle visibility of Connect button.
+  // verbose code - stop unecessary repaints ...
   if Assigned(SCM) then
-    if SCM.scmConnection.Connected then
-      begin
+  begin
+    if SCM.scmConnection.Connected and actnConnect.Visible then
       actnConnect.Visible := false;
-      lblInfoMsg01.Visible := false;
-      end
-    else
-      actnConnect.Visible := true
-  else
-    actnConnect.Visible := true;
+    if not SCM.scmConnection.Connected and not actnConnect.Visible then
+      actnConnect.Visible := true;
+  end
+  else // D E F A U L T  I N I T  . Data module not created.
+  begin
+    if not actnConnect.Visible then
+      actnConnect.Visible := true;
+  end;
 end;
 
 procedure TNominate.actnDisconnectExecute(Sender: TObject);
@@ -263,30 +253,33 @@ begin
   begin
     SCM.DeActivateTable;
     SCM.scmConnection.Connected := false;
-    lblConnectionStatus.Text := 'No connection.';
+    lblStatusBar.Text := 'No connection.';
   end;
   // Hides..unhides visibility of icons in tabLoginSession
-  scmUpdateTabSheetsImages;
-  scmUpdateButtonState;
   AniIndicator1.Visible := false;
   lblAniIndicatorStatus.Visible := false;
   AniIndicator1.Enabled := false;
-
+  SaveToSettings; // As this was a OK connection - store parameters.
+  UpdateAction(actnDisconnect);
+  UpdateAction(actnConnect);
+  Update_Layout;
 end;
 
 procedure TNominate.actnDisconnectUpdate(Sender: TObject);
 begin
-  // toggle visibility of Disconnect button.
+  // verbose code - stop unecessary repaints ...
   if Assigned(SCM) then
-    if SCM.scmConnection.Connected then
-      actnDisconnect.Visible := true
-    else
-    begin
+  begin
+    if SCM.scmConnection.Connected and not actnDisconnect.Visible then
+      actnDisconnect.Visible := true;
+    if not SCM.scmConnection.Connected and actnDisconnect.Visible then
       actnDisconnect.Visible := false;
-      lblInfoMsg01.Visible := true;
-    end
-  else
-    actnDisconnect.Visible := false;
+  end
+  else // D E F A U L T  I N I T  . Data module not created.
+  begin
+    if actnDisconnect.Visible then
+      actnDisconnect.Visible := false;
+  end;
 end;
 
 procedure TNominate.actnRefreshExecute(Sender: TObject);
@@ -305,7 +298,7 @@ begin
     SCM.qryEvent.Open;
     if SCM.qryEvent.Active then
     Begin
-      lblConnectionStatus.Text := 'SCM Refreshed.';
+      lblStatusBar.Text := 'SCM Refreshed.';
       // restore database record indexes
       SCM.LocateEventID(EventID);
     End;
@@ -321,59 +314,6 @@ begin
     actnRefresh.Enabled := true
   else
     actnRefresh.Enabled := false;
-end;
-
-procedure TNominate.actnSCMOptionsExecute(Sender: TObject);
-var
-  dlg: TscmOptions;
-begin
-{$IFNDEF ANDROID}
-  dlg := TscmOptions.Create(self);
-  dlg.ShowModal(
-    procedure(ModalResult: TModalResult)
-    begin
-      // ... Do something.
-
-      // Always reload SCM options from the scmConfig.ini file.
-      // There is no CANCEL for this modal form. What ever the user does,
-      // the input values are accepted.
-      scmOptionsLoad;
-      // update the visibility of the accessory item in the ListViewLane
-      // safe - doesn't require connection.
-      // scmUpdateNomination(fEnableNomination);
-      // little status images used on the tabsheets
-      // scmUpdateTabSheetsImages;
-      // Update the visibility of closed sessions in qrySession
-      // by modifying it's param HIDECLOSED.
-      // This uses value fHideClosedSessions and is best done after a fresh
-      // read of the scmConfig.ini values.
-      scmUpdateHideClosedSessions;
-      // update the visibility of the accessory icon
-      // if fEnableNomination then
-      // ListViewLane.ItemAppearanceObjects.ItemObjects.Accessory.Visible := true
-      // else
-      // ListViewLane.ItemAppearanceObjects.ItemObjects.Accessory.
-      // Visible := false;
-
-      // Update GUI state
-      actnSCMOptionsUpdate(self);
-    end);
-
-{$ELSE}
-  { TODO : Create an android popup window for options? }
-  // ANDROID platform doesn't do Modal Forms.
-{$ENDIF}
-  (*
-    IMPORTANT NOTE : DIALOGUE IS DESTROYED IN TscmOption.FormClose
-  *)
-end;
-
-procedure TNominate.actnSCMOptionsUpdate(Sender: TObject);
-begin
-  // if (Assigned(SCM) and SCM.IsActive) then
-  // ListViewLane.Enabled := true
-  // else
-  // ListViewLane.Enabled := true;
 end;
 
 procedure TNominate.actnToggleModeExecute(Sender: TObject);
@@ -392,7 +332,7 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblConnectionStatus.Text := 'A connection is required to toggle mode!';
+      lblStatusBar.Text := 'A connection is required to toggle mode!';
       passed := false;
     end;
     // A session must be selected
@@ -401,7 +341,7 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblConnectionStatus.Text := 'A session must be selected to toggle mode!';
+      lblStatusBar.Text := 'A session must be selected to toggle mode!';
       passed := false;
     end;
     // The selected session must be open
@@ -410,7 +350,7 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblConnectionStatus.Text := 'The session must be active to toggle mode!';
+      lblStatusBar.Text := 'The session must be active to toggle mode!';
       passed := false;
     end;
   end;
@@ -418,7 +358,7 @@ begin
   if passed then
   begin
     actnToggleMode.Checked := not actnToggleMode.Checked;
-    lblConnectionStatus.Text := '';
+    lblStatusBar.Text := '';
   end;
 
   // in administration mode - only tabLoginSession is visible
@@ -448,8 +388,7 @@ begin
     tabMembershipNum.CanFocus := false;
     edtMembershipNum.SetFocus;
   end;
-  // toggle visibility of topbar buttons
-  scmUpdateButtonState;
+
 end;
 
 procedure TNominate.actnToggleModeUpdate(Sender: TObject);
@@ -465,7 +404,7 @@ var
 begin
   Key := VK_NUMPAD0;
   KeyChar := '0';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -478,7 +417,7 @@ var
 begin
   Key := VK_NUMPAD1;
   KeyChar := '1';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -491,7 +430,7 @@ var
 begin
   Key := VK_NUMPAD2;
   KeyChar := '2';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -504,7 +443,7 @@ var
 begin
   Key := VK_NUMPAD3;
   KeyChar := '3';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -517,7 +456,7 @@ var
 begin
   Key := VK_NUMPAD4;
   KeyChar := '4';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -530,7 +469,7 @@ var
 begin
   Key := VK_NUMPAD5;
   KeyChar := '5';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -543,7 +482,7 @@ var
 begin
   Key := VK_NUMPAD6;
   KeyChar := '6';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -556,7 +495,7 @@ var
 begin
   Key := VK_NUMPAD7;
   KeyChar := '7';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -569,7 +508,7 @@ var
 begin
   Key := VK_NUMPAD8;
   KeyChar := '8';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
 end;
@@ -582,9 +521,26 @@ var
 begin
   Key := VK_NUMPAD9;
   KeyChar := '9';
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
     KeyDown(Key, KeyChar, ShiftState);
+end;
+
+procedure TNominate.btnBKSClickTerminate(Sender: TObject);
+begin
+  edtMembershipNum.SetFocus;
+  edtMembershipNum.Repaint;
+end;
+
+procedure TNominate.btnConfirmNominatedClick(Sender: TObject);
+begin
+    // switch to MembershipNum Tab
+    tabConfimNominated.Visible := false;
+    tabNominate.Visible := false;
+    edtmembershipNum.Text := '';
+    fCurrMemberID := 0;
+    tabMembershipNum.Visible := true;
+    TabControl1.TabIndex := 1;
 end;
 
 procedure TNominate.btnNumPadBackSpaceClick(Sender: TObject);
@@ -597,7 +553,7 @@ begin
   // Note: don't use VK_BACK; - Windows API only
   Key := vkBack; // System.UITypes - Universal, multi-platform.
   KeyChar := Char(vkBack); // KeyChar := #08;
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if edtMembershipNum.IsFocused then
   begin
     // Note:
@@ -618,61 +574,17 @@ begin
   end;
 end;
 
-procedure TNominate.btnBKSClickTerminate(Sender: TObject);
-begin
-  edtMembershipNum.SetFocus;
-  edtMembershipNum.Repaint;
-end;
-
-procedure TNominate.btnConfirmNominatedClick(Sender: TObject);
-begin
-    // switch to MembershipNum Tab
-    tabConfimNominated.Visible := false;
-    tabNominate.Visible := false;
-    edtmembershipNum.Text := '';
-    fCurrMemberID := 0;
-    tabMembershipNum.Visible := true;
-    TabControl1.TabIndex := 1;
-end;
-
 procedure TNominate.btnNumPadClearClick(Sender: TObject);
 begin
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   edtMembershipNum.Text := '';
-end;
-
-procedure TNominate.btnPostClick(Sender: TObject);
-
-begin
-  // Process nomination ....
-  // Iterate over TMemberNom and SYNC MSSQLEXPRESS Nominate table data.
-  scmPostNominations;
-
-  if fShowConfirmationDlg then
-  begin
-    // show confirmation tabsheet
-    tabNominate.Visible := false;
-    tabConfimNominated.Visible := true;
-    TabControl1.TabIndex := 3;
-  end
-  else
-  begin
-    // switch to MembershipNum Tab
-    tabNominate.Visible := false;
-    tabConfimNominated.Visible := false;
-    edtmembershipNum.Text := '';
-    fCurrMemberID := 0;
-    tabMembershipNum.Visible := true;
-    TabControl1.TabIndex := 1;
-  end;
-
 end;
 
 procedure TNominate.btnNumPadOKClick(Sender: TObject);
 var
   Number: Integer;
 begin
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   // Are we connected?
   if (Assigned(SCM) and SCM.IsActive) then
   begin
@@ -711,7 +623,7 @@ begin
 {$IFDEF MSWINDOWS}
             MessageBeep(MB_ICONERROR);
 {$ENDIF}
-            lblConnectionStatus.Text := 'No events found in this session!';
+            lblStatusBar.Text := 'No events found in this session!';
           end;
         end
         else
@@ -719,7 +631,7 @@ begin
 {$IFDEF MSWINDOWS}
           MessageBeep(MB_ICONERROR);
 {$ENDIF}
-          lblConnectionStatus.Text := 'Unexpected error. ObjectList invalid.';
+          lblStatusBar.Text := 'Unexpected error. ObjectList invalid.';
         end;
       end
       else
@@ -727,7 +639,7 @@ begin
 {$IFDEF MSWINDOWS}
         MessageBeep(MB_ICONERROR);
 {$ENDIF}
-        lblConnectionStatus.Text := 'Member''s ID not found or not a swimmer or not active or is archived.';
+        lblStatusBar.Text := 'Member''s ID not found or not a swimmer or not active or is archived.';
       end;
     end
     else
@@ -735,14 +647,47 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblConnectionStatus.Text := 'The membership number wasn''t found.';
+      lblStatusBar.Text := 'The membership number wasn''t found.';
     end;
   end
 end;
 
+procedure TNominate.btnPostClick(Sender: TObject);
+
+begin
+  // Process nomination ....
+  // Iterate over TMemberNom and SYNC MSSQLEXPRESS Nominate table data.
+  PostNominations;
+
+  if fShowConfirmationDlg then
+  begin
+    // show confirmation tabsheet
+    tabNominate.Visible := false;
+    tabConfimNominated.Visible := true;
+    TabControl1.TabIndex := 3;
+  end
+  else
+  begin
+    // switch to MembershipNum Tab
+    tabNominate.Visible := false;
+    tabConfimNominated.Visible := false;
+    edtmembershipNum.Text := '';
+    fCurrMemberID := 0;
+    tabMembershipNum.Visible := true;
+    TabControl1.TabIndex := 1;
+  end;
+
+end;
+
+procedure TNominate.chkbSessionVisibilityClick(Sender: TObject);
+begin
+  if (Assigned(SCM) and SCM.scmConnection.Connected) then
+    Update_SessionVisibility();
+end;
+
 procedure TNominate.cmbSessionListChange(Sender: TObject);
 begin
-  lblConnectionStatus.Text := '';
+  lblStatusBar.Text := '';
   if (Assigned(SCM) and SCM.IsActive) then
   begin
       if Assigned(fMemberNomObjects) then
@@ -757,45 +702,45 @@ end;
 
 procedure TNominate.ConnectOnTerminate(Sender: TObject);
 begin
+  lblAniIndicatorStatus.Visible := false;
+  AniIndicator1.Enabled := false;
+  AniIndicator1.Visible := false;
+
   if TThread(Sender).FatalException <> nil then
   begin
     // something went wrong
     // Exit;
   end;
 
-  // Tidy-up display
-  // lblAniIndicatorStatus.Visible := false;
-  // AniIndicator1.Enabled := false;
-  // AniIndicator1.Visible := false;
-  if Assigned(SCM) then
+  if not Assigned(SCM) then
+    exit;
+
+  // C O N N E C T E D  .
+  if (SCM.scmConnection.Connected) then
   begin
-    // Make tables active
-    if (SCM.scmConnection.Connected) then
+    SCM.ActivateTable;
+    // ALL TABLES SUCCESSFULLY MADE ACTIVE ...
+    if (SCM.IsActive = true) then
     begin
-      SCM.ActivateTable;
-      // ALL TABLES SUCCESSFULLY MADE ACTIVE ...
-      if (SCM.IsActive = true) then
-      begin
-        lblConnectionStatus.Text := 'Connected to SwimClubMeet.';
-        // TODO: FIRST TIME INIT
-        // scmRefreshLane;
-      end
-      else
-        lblConnectionStatus.Text :=
-          'Connected to SwimClubMeet but not all tables are active!';
+      // Set the visibility of closed sessions.
+      Update_SessionVisibility;
+      // I N I T  ....
     end;
   end;
 
-  // FINAL CHECKS
-  if (Assigned(SCM) and (SCM.scmConnection.Connected = false)) then
+  if not SCM.scmConnection.Connected then
   begin
-    lblConnectionStatus.Text := 'A connection couldn''t be made. (Check you input values.)';
+    // Attempt to connect failed.
+    lblStatusBar.Text :=
+      'A connection couldn''t be made. (Check you input values.)';
   end;
 
-  // Toggle button state.
-  scmUpdateButtonState;
-  // Label showing application and database version
-  GetSCMVerInfo;
+  // Disconnect button vivibility
+  UpdateAction(actnDisconnect);
+  // Connect button vivibility
+  UpdateAction(actnConnect);
+  // Display of layout panels (holding TListView grids).
+  Update_Layout;
 
 end;
 
@@ -813,13 +758,9 @@ begin
 end;
 
 procedure TNominate.FormCreate(Sender: TObject);
-var
-  AValue, ASection, AName: String;
-
 begin
   // Initialization of params.
   application.ShowHint := true;
-  ASection := 'MSSQL_SwimClubMeet';
   AniIndicator1.Visible := false;
   AniIndicator1.Enabled := false;
   btnDisconnect.Visible := false;
@@ -830,65 +771,29 @@ begin
   fCurrMemberID := 0;
   fIsBuildinglbx := false;
 
+  // A Class that uses JSON to read and write application configuration
+  if Settings = nil then
+    Settings := TPrgSetting.Create;
 
-  // note cmbSessionList.Clear doesn't work here.
   cmbSessionList.Items.Clear;
   lbxNominate.Items.Clear;
 
-  // clean-up the top bar captions
-  lblSwimClubTitle.Text := String.Empty;
-  lblSessionTitle.Text := String.Empty;
-  lblSelectedEvent.Text := String.Empty;
-  lblSelectedEntrant.Text := String.Empty;
+  // C R E A T E   T H E   D A T A M O D U L E .
+  if NOT Assigned(SCM) then
+    SCM := TSCM.Create(Self);
+  if SCM.scmConnection.Connected then
+    SCM.scmConnection.Connected := false;
 
-  // clean-up TabSheet3
-  // lblEntrantsHeatNum.Text := 'Entrants ...';
+  // READ APPLICATION   C O N F I G U R A T I O N   PARAMS.
+  // JSON connection settings. Windows location :
+  // %SYSTEMDRIVE\%%USER%\%USERNAME%\AppData\Roaming\Artanemus\SwimClubMeet\Nominate
+  LoadSettings;
 
-  // ON CREATION SETS - SCM->scmConnection->Active = false;
-  SCM := TSCM.Create(self);
-
-  // Read last successful connection params and load into controls
-  AName := 'Server';
-  edtServer.Text := LoadSharedIniFileSetting(ASection, AName);
-  AName := 'User';
-  edtUser.Text := LoadSharedIniFileSetting(ASection, AName);
-  AName := 'Password';
-  edtPassword.Text := LoadSharedIniFileSetting(ASection, AName);
-  AName := 'OsAuthent';
-  AValue := LoadSharedIniFileSetting(ASection, AName);
-
-  if ((UpperCase(AValue) = 'YES') or (UpperCase(AValue) = 'TRUE')) then
-    chkOsAuthent.IsChecked := true
-  else
-    chkOsAuthent.IsChecked := false;
+  // TAB_SHEET : DEFAULT: Login-Session
+  TabControl1.TabIndex := 0;
 
   // Connection status - located in footer bar.
-  lblConnectionStatus.Text := '';
-
-
-  // Login-Session
-  TabControl1.TabIndex := 0;
-  // read user options
-  scmOptionsLoad;
-  // update the visibility of the accessory item in the ListViewLane
-  // safe - doesn't require connection.
-  // scmUpdateNomination(fEnableNomination);
-  // update the images to use in each tabsheet
-  // scmUpdateTabSheetsImages;
-  // Update the visibility of closed sessions in qrySession
-  // by modifying it's param HIDECLOSED.
-  // This uses value fHideClosedSessions and is best done after a fresh
-  // read of the scmConfig.ini values.
-  // scmUpdateHideClosedSessions;
-  // TIDY ALL TLISTVIEW DISPLAYS - (fixes TViewListLane)
-  // on startup SCM will be set to disconnected.
-  if Assigned(SCM) then
-    SCM.DeActivateTable;
-
-  // Hide controls used by entrant details
-  // scmRefreshEntrant_Detail;
-  // Hide big buttons.
-  // scmRefreshBigButtons;
+  lblStatusBar.Text := 'NOT CONNECTED';
 
   edtMembershipNum.Text := '';
   // actnToggleMode.AutoChecked is disabled - ASSERT AdminMode.
@@ -898,7 +803,7 @@ begin
   tabConfimNominated.Visible := false;
   tabMembershipNum.Visible := false;
   tabNominate.Visible := false;
-  scmUpdateButtonState;
+
 
   // prep lbxNominate
   fMemberNomObjects := TObjectList.Create(true);
@@ -907,13 +812,11 @@ end;
 
 procedure TNominate.FormDestroy(Sender: TObject);
 begin
+  // finalise any out standing nominations?
   if TabControl1.TabIndex = 2 then
-  begin
     fShowConfirmationDlg := false;
-    // finalizes any nominations
-    // TODO : post changes or abort?
-    // PostChanges
-  end;
+
+  // C L E A N   U P   N O M I N A T I O N  L I S T B O X
   // remove ptrs to objects in list
   lbxNominate.Items.Clear;
   // destroy lbxNominate objects
@@ -922,14 +825,37 @@ begin
     fMemberNomObjects.Clear; // destroys objects
     FreeAndNil(fMemberNomObjects);
   end;
-  // IF DATA-MODULE EXISTS ... break the current connection.
+
   if Assigned(SCM) then
   begin
-    SCM.DeActivateTable;
-    SCM.scmConnection.Connected := false;
+    if SCM.scmConnection.Connected then
+    begin
+      SaveToSettings;
+      SCM.scmConnection.Connected := false;
+    end;
+    SCM.Free;
   end;
-  // CLEAN MEMORY
-  SCM.Free;
+
+end;
+
+function TNominate.GetSCMVerInfo(): String;
+{$IF defined(MSWINDOWS)}
+var
+  myExeInfo: TExeInfo;
+{$ENDIF}
+begin
+  result := '';
+  // if connected - display the application version
+  // and the SwimClubMeet database version.
+  if Assigned(SCM) then
+    if SCM.scmConnection.Connected then
+      result := 'DB v' + SCM.GetDBVerInfo;
+{$IF defined(MSWINDOWS)}
+  // get the application version number
+  myExeInfo := TExeInfo.Create(Self);
+  result := 'App v' + myExeInfo.FileVersion + ' - ' + result;
+  myExeInfo.Free;
+{$ENDIF}
 end;
 
 procedure TNominate.lbxNominateChangeCheck(Sender: TObject);
@@ -947,24 +873,44 @@ begin
   end;
 end;
 
-procedure TNominate.scmOptionsLoad;
-var
-  ini: TIniFile;
-  Section: String;
+procedure TNominate.LoadFromSettings;
 begin
-  Section := 'NominateOptions';
-  ini := TIniFile.Create(TPath.GetDocumentsPath + PathDelim +
-    SCMCONFIGFILENAME);
-  try
-    fShowConfirmationDlg := ini.ReadBool(Section, 'ShowConfirmationDlg', false);
-    fHideClosedSessions := ini.ReadBool(Section, 'HideClosedSessions', true);
-  finally
-    ini.Free;
-  end;
-
+  edtServerName.Text := Settings.Server;
+  edtUser.Text := Settings.User;
+  edtPassword.Text := Settings.Password;
+  chkbUseOsAuthentication.IsChecked := Settings.OSAuthent;
+  chkbSessionVisibility.IsChecked := Settings.SessionVisibility;
+  chkboxShowConfirmationDlg.IsChecked := Settings.ShowConfirmationDlg;
+  fLoginTimeOut := Settings.LoginTimeOut;
 end;
 
+procedure TNominate.LoadSettings;
+begin
+  if Settings = nil then
+    Settings := TPrgSetting.Create;
+  if not FileExists(Settings.GetDefaultSettingsFilename()) then
+  begin
+    ForceDirectories(Settings.GetSettingsFolder());
+    Settings.SaveToFile();
+  end;
+  Settings.LoadFromFile();
+  LoadFromSettings();
+end;
 
+procedure TNominate.SaveToSettings;
+begin
+  Settings.Server := edtServerName.Text;
+  Settings.User := edtUser.Text;
+  Settings.Password := edtPassword.Text;
+  if chkbUseOsAuthentication.IsChecked then
+    Settings.OSAuthent := true
+  else
+    Settings.OSAuthent := false;
+  Settings.SessionVisibility := chkbSessionVisibility.IsChecked;
+  Settings.ShowConfirmationDlg := chkboxShowConfirmationDlg.IsChecked;
+  Settings.LoginTimeOut := fLoginTimeOut;
+  Settings.SaveToFile();
+end;
 
 procedure TNominate.scmBuildlbxItems(objList: TObjectList);
 var
@@ -1014,8 +960,8 @@ begin
             obj.EventID := SCM.qryEvent.FieldByName('EventID').AsInteger;
             obj.DistanceID := SCM.qryEvent.FieldByName('DistanceID').AsInteger;
             obj.StrokeID := SCM.qryEvent.FieldByName('StrokeID').AsInteger;
-            obj.Title := SCM.qryEvent.FieldByName('Title').AsString;
-            obj.Description := SCM.qryEvent.FieldByName('Description').AsString;
+            obj.Title := SCM.qryEvent.FieldByName('ListTextStr').AsString;
+            obj.Description := SCM.qryEvent.FieldByName('ListDetailStr').AsString;
             obj.MemberID := MemberID;
             obj.EventStatusID := SCM.qryEvent.FieldByName('EventStatusID').AsInteger;
 
@@ -1041,149 +987,7 @@ begin
 end;
 
 
-procedure TNominate.scmUpdateButtonState;
-begin
-
-  btnOptions.Visible := true;
-  btnRefresh.Visible := true;
-  btnToggle.Visible := true;
-
-  // DATAMODULE OFFLINE
-  if not (Assigned(SCM) and SCM.IsActive) then
-  begin
-    btnToggle.Visible := false;
-    btnRefresh.Visible := false;
-  end
-  else
-  begin
-    // ADMIN MODE
-    if not (actnToggleMode.Checked) then
-    begin
-      btnOptions.Visible := true;
-    // The selected session must be open
-    if cmbSessionList.ItemIndex = -1 then
-      btnRefresh.Visible := false;
-    end
-    else
-    // NOMINATE MODE
-    begin
-      btnOptions.Visible := false;
-      btnRefresh.Visible := false;
-    end
-  end;
-end;
-
-
-
-procedure TNominate.scmUpdateHideClosedSessions;
-begin
-  if Assigned(SCM) and SCM.qrySession.Active then
-  begin
-    SCM.qrySession.DisableControls;
-    // remove all the strings held in the combobox
-    // note cmbSessionList.Clear doesn't work here.
-    cmbSessionList.Items.Clear;
-    SCM.qrySession.Close;
-    // ASSIGN PARAM to display or hide CLOSED sessions
-    SCM.qrySession.ParamByName('HIDECLOSED').AsBoolean := fHideClosedSessions;
-    SCM.qrySession.Prepare;
-    SCM.qrySession.Open;
-    SCM.qrySession.EnableControls
-  end
-  // the datamodule exists but qrySession isn't connected..
-  else if (Assigned(SCM)) then
-  begin
-    // qrySession ISN'T ACTIVE ....
-    // update state of qryLane PARAM
-    SCM.qrySession.ParamByName('HIDECLOSED').AsBoolean := fHideClosedSessions;
-  end;
-
-end;
-
-//procedure TNominate.scmUpdatelbxNominateChecks;
-//var
-//  i: Integer;
-//  obj: TMemberNom;
-//  lbxi: TListBoxItem;
-//begin
-//  for i := 0 to lbxNominate.Items.Count - 1 do
-//  begin
-//    obj := TMemberNom(lbxNominate.Items.Objects[i]);
-//    lbxi := lbxNominate.ListItems[i];
-//    lbxi.IsChecked := scmIsMemberNominated(obj.MemberID, obj.SessionID,
-//      obj.DistanceID, obj.StrokeID);
-//  end;
-//end;
-
-//procedure TNominate.scmUpdatelbxNominateItems;
-//var
-//  i, index: Integer;
-//  obj: TMemberNom;
-//  lbxi: TListBoxItem;
-//begin
-//
-//  lbxNominate.Items.Clear;
-//  if Assigned(fMemberNomObjects) then
-//  begin
-//    for i := 0 to fMemberNomObjects.Count - 1 do
-//    begin
-//      obj := TMemberNom(fMemberNomObjects.Items[i]);
-//      index := lbxNominate.Items.AddObject(obj.Title, obj);
-//      lbxi := lbxNominate.ListItems[index];
-//      // Note: may include the comment '(Qualified)'
-//      lbxi.ItemData.Detail := obj.Description;
-//      lbxi.IsChecked := scmIsMemberNominated(obj.MemberID, obj.SessionID,
-//        obj.DistanceID, obj.StrokeID);
-//    end;
-//  end;
-//end;
-
-//procedure TNominate.scmUpdatelbxNominateQualified;
-//var
-//  i: Integer;
-//  obj: TMemberNom;
-//  lbxi: TListBoxItem;
-//begin
-//  for i := 0 to lbxNominate.Items.Count - 1 do
-//  begin
-//    obj := TMemberNom(lbxNominate.Items.Objects[i]);
-//    lbxi := lbxNominate.ListItems[i];
-//    lbxi.IsChecked := scmIsMemberQualified(obj.MemberID, obj.DistanceID,
-//      obj.StrokeID);
-//  end;
-//end;
-
-procedure TNominate.scmUpdateTabSheetsImages;
-begin
-  // Update image indicators in the tabsheets.
-  if (Assigned(SCM) and SCM.IsActive) then
-  begin
-    if (fShowConfirmationDlg) then
-    begin
-      if (fShowConfirmationDlg) then
-        // small red pin on tabsheet
-        tabNominate.ImageIndex := 1
-      else
-        // small white pin on tabsheet
-        tabNominate.ImageIndex := 0
-    end;
-
-    if (fHideClosedSessions) then
-      tabLoginSession.ImageIndex := 3
-    else
-      tabLoginSession.ImageIndex := 2;
-
-  end
-  // Not connect - hide all
-  else
-  begin
-    tabNominate.ImageIndex := -1;
-    tabLoginSession.ImageIndex := -1;
-    tabMembershipNum.ImageIndex := -1;
-  end;
-end;
-
-procedure TNominate.scmPostNominations;
+procedure TNominate.PostNominations;
 var
   EntrantID, i: Integer;
   obj: TMemberNom;
@@ -1246,6 +1050,32 @@ begin
   end;
 end;
 
+procedure TNominate.Status_ConnectionDescription;
+begin
+  if Assigned(SCM) and SCM.IsActive then
+  begin
+    // STATUS BAR CAPTION.
+    lblStatusBar.Text := 'Connected to SwimClubMeet. ';
+    lblStatusBar.Text := lblStatusBar.Text + GetSCMVerInfo;
+    lblStatusBar.Text := lblStatusBar.Text + sLineBreak +
+      bsSwimClub.DataSet.FieldByName('Caption').AsString;
+  end;
+end;
+
+procedure TNominate.Status_EventDescription;
+begin
+  if Assigned(SCM) and SCM.IsActive then
+  begin
+    // S T A T U S   L I N E .
+    // E V E N T   D E S C R I P T I O  N  .
+    // Distance Stroke, NOM and ENT count ....
+    lblStatusBar.Text := bsEvent.DataSet.FieldByName
+      ('ListDetailStr').AsString;
+  end
+  else
+      lblStatusBar.Text := '';
+end;
+
 procedure TNominate.TabControl1Change(Sender: TObject);
 begin
   if TabControl1.TabIndex = 1 then
@@ -1254,28 +1084,62 @@ begin
   end;
 end;
 
-procedure TNominate.GetSCMVerInfo;
-{$IF defined(MSWINDOWS)}
-var
-  myExeInfo: TExeInfo;
-{$ENDIF}
+procedure TNominate.Update_EntrantStat;
 begin
-  // if connected - display the application version
-  // and the SwimClubMeet database version.
-  if Assigned(SCM) then
-    if SCM.scmConnection.Connected then
-      Label4.Text := 'DB v' + SCM.GetDBVerInfo
-    else
-      Label4.Text := '';
 
-{$IF defined(MSWINDOWS)}
-  // get the application version number
-  myExeInfo := TExeInfo.Create(self);
-  Label4.Text := 'App v' + myExeInfo.FileVersion + ' - ' +
-    Label4.Text;
-  myExeInfo.Free;
-
-{$ENDIF}
 end;
+
+procedure TNominate.Update_Layout;
+begin
+
+end;
+
+procedure TNominate.Update_SessionVisibility;
+begin
+  if Assigned(SCM) and SCM.qrySession.Active then
+  begin
+    SCM.qrySession.DisableControls;
+    // remove all the strings held in the combobox
+    // note cmbSessionList.Clear doesn't work here.
+    cmbSessionList.Items.Clear;
+    SCM.qrySession.Close;
+    // ASSIGN PARAM to display or hide CLOSED sessions
+    SCM.qrySession.ParamByName('HIDECLOSED').AsBoolean :=
+      chkbSessionVisibility.IsChecked;
+    SCM.qrySession.Prepare;
+    SCM.qrySession.Open;
+    SCM.qrySession.EnableControls
+  end
+
+  // the datamodule exists but qrySession isn't connected..
+  else if (Assigned(SCM)) then
+  begin
+    // qrySession ISN'T ACTIVE ....
+    // update state of qryLane PARAM
+    SCM.qrySession.ParamByName('HIDECLOSED').AsBoolean :=
+      chkbSessionVisibility.IsChecked;
+  end;
+end;
+
+procedure TNominate.Update_TabSheetCaptions;
+begin
+
+end;
+
+{ TDefaultFont }
+
+function TDefaultFont.GetDefaultFontFamilyName: string;
+begin
+  result := 'Tahoma';
+end;
+
+function TDefaultFont.GetDefaultFontSize: Single;
+begin
+  result := 16.0; // Set the default font size here
+end;
+
+initialization
+
+TFont.FontService := TDefaultFont.Create;
 
 end.
