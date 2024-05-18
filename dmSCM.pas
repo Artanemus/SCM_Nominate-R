@@ -44,6 +44,7 @@ type
     tblSwimClubNumOfLanes: TIntegerField;
     tblSwimClubSwimClubID: TFDAutoIncField;
     tblSwimClubWebSite: TWideStringField;
+    procedure DataModuleCreate(Sender: TObject);
   private
   const
     SCMCONFIGFILENAME = 'SCMConfig.ini';
@@ -82,6 +83,12 @@ implementation
 
 uses
   System.Variants;
+
+procedure TSCM.DataModuleCreate(Sender: TObject);
+begin
+  if scmConnection.Connected then
+    scmConnection.Connected := false;
+end;
 
 { TSCM }
 

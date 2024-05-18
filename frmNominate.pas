@@ -46,9 +46,9 @@ type
     btnConfirmNominated: TButton;
     btnConnect: TButton;
     btnDisconnect: TButton;
-    btnNumPadBackSpace: TButton;
-    btnNumPadClear: TButton;
-    btnNumPadOK: TButton;
+    btnBackSpace: TButton;
+    btnClear: TButton;
+    btnEnter: TButton;
     btnPost: TButton;
     btnRefresh: TButton;
     btnToggle: TButton;
@@ -58,7 +58,6 @@ type
     cmbSessionList: TComboBox;
     cmbSwimClubList: TComboBox;
     edtMemberFullName: TEdit;
-    edtMembershipNum: TEdit;
     edtPassword: TEdit;
     edtServerName: TEdit;
     edtUser: TEdit;
@@ -68,10 +67,10 @@ type
     FlowLayoutBreak3: TFlowLayoutBreak;
     FlowLayoutBreak5: TFlowLayoutBreak;
     Image1: TImage;
-    Label1: TLabel;
+    txtEnterNumberMsg: TLabel;
     Label12: TLabel;
     Label18: TLabel;
-    Label2: TLabel;
+    txtPostToCompleteMsg: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label7: TLabel;
@@ -100,7 +99,7 @@ type
     SizeGrip1: TSizeGrip;
     StyleBook1: TStyleBook;
     StyleBook2: TStyleBook;
-    tabConfimNominated: TTabItem;
+    tabConfirmNominated: TTabItem;
     TabControl1: TTabControl;
     tabLoginSession: TTabItem;
     tabMembershipNum: TTabItem;
@@ -108,6 +107,12 @@ type
     Timer1: TTimer;
     bsEvent: TBindSourceDB;
     LinkListControlToField2: TLinkListControlToField;
+    txtNumber: TText;
+    Rectangle1: TRectangle;
+    BindSourceDB1: TBindSourceDB;
+    LinkListControlToField3: TLinkListControlToField;
+    Layout6: TLayout;
+    Layout10: TLayout;
     procedure actnConnectExecute(Sender: TObject);
     procedure actnConnectUpdate(Sender: TObject);
     procedure actnDisconnectExecute(Sender: TObject);
@@ -116,59 +121,41 @@ type
     procedure actnRefreshUpdate(Sender: TObject);
     procedure actnToggleModeExecute(Sender: TObject);
     procedure actnToggleModeUpdate(Sender: TObject);
-    procedure btn00Click(Sender: TObject);
-    procedure btn01Click(Sender: TObject);
-    procedure btn02Click(Sender: TObject);
-    procedure btn03Click(Sender: TObject);
-    procedure btn04Click(Sender: TObject);
-    procedure btn05Click(Sender: TObject);
-    procedure btn06Click(Sender: TObject);
-    procedure btn07Click(Sender: TObject);
-    procedure btn08Click(Sender: TObject);
-    procedure btn09Click(Sender: TObject);
+    procedure btnNumClick(Sender: TObject);
     procedure btnConfirmNominatedClick(Sender: TObject);
-    procedure btnNumPadBackSpaceClick(Sender: TObject);
-    procedure btnNumPadClearClick(Sender: TObject);
-    procedure btnNumPadOKClick(Sender: TObject);
+    procedure btnBackSpaceClick(Sender: TObject);
+    procedure btnClearClick(Sender: TObject);
+    procedure btnEnterClick(Sender: TObject);
     procedure btnPostClick(Sender: TObject);
     procedure chkbSessionVisibilityClick(Sender: TObject);
     procedure cmbSessionListChange(Sender: TObject);
-    procedure edtMembershipNumKeyDown(Sender: TObject; var Key: Word;
-      var KeyChar: Char; Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lbxNominateChangeCheck(Sender: TObject);
     procedure TabControl1Change(Sender: TObject);
   private
-  const
-    CONNECTIONTIMEOUT = 48;
+
   var
     fConnectionCountdown: Integer;
     fLoginTimeOut: Integer;
     fCurrMemberID: Integer;
-    fHideClosedSessions: Boolean;
     fIsBuildinglbx: Boolean;
     fMemberNomObjects: TObjectList; // used by lbxNominate
     fShowConfirmationDlg: Boolean;
-    procedure btnBKSClickTerminate(Sender: TObject);
-    procedure ConnectOnTerminate(Sender: TObject);
 
+    procedure ConnectOnTerminate(Sender: TObject);
     function GetSCMVerInfo(): string;
     procedure LoadFromSettings; // JSON Program Settings
     procedure LoadSettings; // JSON Program Settings
     procedure SaveToSettings; // JSON Program Settings
 
-    // ---- WIP introduced from timekeeper...
     procedure Status_ConnectionDescription;
-    procedure Status_EventDescription;
-    procedure Update_EntrantStat;
-    procedure Update_Layout;
     procedure Update_SessionVisibility;
-    procedure Update_TabSheetCaptions;
-    // ---- WIP introduced from timekeeper...
 
     procedure scmBuildlbxItems(objList: TObjectList);
     procedure scmBuildMemberNomObjects(MemberID: Integer);
+
+    procedure Refresh_Events;
 
     procedure PostNominations;
   public
@@ -189,13 +176,13 @@ uses
   // Shellapi,
 {$ENDIF}
   // FOR scmLoadOptions
-  System.IniFiles, System.IOUtils, FireDAC.Stan.Param
-  , Data.DB, ExeInfo, SCMSimpleConnect, SCMUtility;
+  System.IOUtils, FireDAC.Stan.Param, Data.DB, ExeInfo, SCMSimpleConnect,
+  SCMUtility;
 
 procedure TNominate.actnConnectExecute(Sender: TObject);
 var
-    myThread: TThread;
-    sc: TSimpleConnect;
+  myThread: TThread;
+  sc: TSimpleConnect;
 begin
   if (Assigned(SCM) and (SCM.scmConnection.Connected = false)) then
   begin
@@ -217,6 +204,7 @@ begin
 
         sc := TSimpleConnect.CreateWithConnection(Self, SCM.scmConnection);
         sc.DBName := 'SwimClubMeet'; // DEFAULT
+        sc.SaveConfigAfterConnection := false; // using JSON not System.IniFiles
         sc.SimpleMakeTemporyConnection(edtServerName.Text, edtUser.Text,
           edtPassword.Text, chkbUseOsAuthentication.IsChecked);
         Timer1.Enabled := false;
@@ -262,7 +250,6 @@ begin
   SaveToSettings; // As this was a OK connection - store parameters.
   UpdateAction(actnDisconnect);
   UpdateAction(actnConnect);
-  Update_Layout;
 end;
 
 procedure TNominate.actnDisconnectUpdate(Sender: TObject);
@@ -301,9 +288,9 @@ begin
       lblStatusBar.Text := 'SCM Refreshed.';
       // restore database record indexes
       SCM.LocateEventID(EventID);
+      // performs full ReQuery of lane table.
+      // RefreshLane;
     End;
-    // performs full ReQuery of lane table.
-    // scmRefreshLane;
   end;
   SCM.qryEvent.EnableControls;
 end;
@@ -314,35 +301,28 @@ begin
     actnRefresh.Enabled := true
   else
     actnRefresh.Enabled := false;
+  case TabControl1.TabIndex of
+    0:
+      if not actnRefresh.Visible then
+        actnRefresh.Visible := true;
+    1, 2, 3:
+      if actnRefresh.Visible then
+        actnRefresh.Visible := false;
+  end;
 end;
 
 procedure TNominate.actnToggleModeExecute(Sender: TObject);
-var
-passed: Boolean;
 begin
-  // NOTE : AutoCheck is disabled
-  passed := true;
-  // if the current mode is AdminMode
-  if actnToggleMode.Checked = false then
+  if TabControl1.TabIndex = 0 then
   begin
-    // The datamodule must be created
-    // A connection is required ...
-    if not(Assigned(SCM) and SCM.IsActive) then
-    begin
-{$IFDEF MSWINDOWS}
-      MessageBeep(MB_ICONERROR);
-{$ENDIF}
-      lblStatusBar.Text := 'A connection is required to toggle mode!';
-      passed := false;
-    end;
-    // A session must be selected
+    // A session must be selected.
     if cmbSessionList.ItemIndex = -1 then
     begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblStatusBar.Text := 'A session must be selected to toggle mode!';
-      passed := false;
+      lblStatusBar.Text := 'A session must be selected to toggle mode.';
+      exit;
     end;
     // The selected session must be open
     if (SCM.qrySession.FieldByName('SessionStatusID').AsInteger <> 1) then
@@ -350,246 +330,72 @@ begin
 {$IFDEF MSWINDOWS}
       MessageBeep(MB_ICONERROR);
 {$ENDIF}
-      lblStatusBar.Text := 'The session must be active to toggle mode!';
-      passed := false;
+      lblStatusBar.Text := 'The session mustn''t be locked to toggle mode.';
+      exit;
     end;
-  end;
-
-  if passed then
-  begin
-    actnToggleMode.Checked := not actnToggleMode.Checked;
-    lblStatusBar.Text := '';
-  end;
-
-  // in administration mode - only tabLoginSession is visible
-  if actnToggleMode.Checked = false then
-  begin
-    if  TabControl1.TabIndex = 2 then
+    // the session must have events
+    if bsEvent.DataSet.IsEmpty then
     begin
-      // TODO: postchanges OR abort changes?
-      // PostChanges
+      lblStatusBar.Text := 'No events in this session.';
+      exit;
     end;
-
-    tabLoginSession.Visible := true;
-    tabMembershipNum.Visible := false;
-    tabNominate.Visible := false;
-    tabConfimNominated.Visible := false;
-    TabControl1.TabIndex := 0;
+    TabControl1.Next(TTabTransition.Slide);
   end
-  // in nominate mode - tabLoginSession not visible
   else
-  begin
-    tabLoginSession.Visible := false;
-    tabMembershipNum.Visible := true;
-    tabNominate.Visible := false;
-    TabControl1.TabIndex := 1;
-    edtMembershipNum.Text := '';
-    // ASSERT ... user cannot select
-    tabMembershipNum.CanFocus := false;
-    edtMembershipNum.SetFocus;
-  end;
-
+    TabControl1.TabIndex := 0;
 end;
 
 procedure TNominate.actnToggleModeUpdate(Sender: TObject);
 begin
-  // do something ...
+  if (Assigned(SCM) and SCM.IsActive) then
+    actnToggleMode.Enabled := true
+  else
+    actnToggleMode.Enabled := false;
 end;
 
-procedure TNominate.btn00Click(Sender: TObject);
+procedure TNominate.btnNumClick(Sender: TObject);
 var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
+  s: string;
 begin
-  Key := VK_NUMPAD0;
-  KeyChar := '0';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn01Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD1;
-  KeyChar := '1';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn02Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD2;
-  KeyChar := '2';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn03Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD3;
-  KeyChar := '3';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn04Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD4;
-  KeyChar := '4';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn05Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD5;
-  KeyChar := '5';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn06Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD6;
-  KeyChar := '6';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn07Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD7;
-  KeyChar := '7';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn08Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD8;
-  KeyChar := '8';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btn09Click(Sender: TObject);
-var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-begin
-  Key := VK_NUMPAD9;
-  KeyChar := '9';
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-    KeyDown(Key, KeyChar, ShiftState);
-end;
-
-procedure TNominate.btnBKSClickTerminate(Sender: TObject);
-begin
-  edtMembershipNum.SetFocus;
-  edtMembershipNum.Repaint;
+  s := txtNumber.Text;
+  s := s + TButton(Sender).Text;
+  txtNumber.Text := s;
 end;
 
 procedure TNominate.btnConfirmNominatedClick(Sender: TObject);
 begin
-    // switch to MembershipNum Tab
-    tabConfimNominated.Visible := false;
-    tabNominate.Visible := false;
-    edtmembershipNum.Text := '';
-    fCurrMemberID := 0;
-    tabMembershipNum.Visible := true;
-    TabControl1.TabIndex := 1;
+  // switch to MembershipNum Tab
+  txtNumber.Text := '';
+  fCurrMemberID := 0;
+  TabControl1.TabIndex := 1;
 end;
 
-procedure TNominate.btnNumPadBackSpaceClick(Sender: TObject);
+procedure TNominate.btnBackSpaceClick(Sender: TObject);
 var
-  Key: Word;
-  KeyChar: Char;
-  ShiftState: TShiftState;
-  Thread: TThread;
+  s: string;
 begin
-  // Note: don't use VK_BACK; - Windows API only
-  Key := vkBack; // System.UITypes - Universal, multi-platform.
-  KeyChar := Char(vkBack); // KeyChar := #08;
-  lblStatusBar.Text := '';
-  if edtMembershipNum.IsFocused then
-  begin
-    // Note:
-    // Backspace doesn't perform correctly unless we run a thread and
-    // include the following termination procedure.
-    Thread := TThread.CreateAnonymousThread(
-      procedure
-      begin
-        try
-          edtMembershipNum.BeginUpdate;
-          KeyDown(Key, KeyChar, ShiftState);
-        finally
-          edtMembershipNum.EndUpdate;
-        end;
-      end);
-    Thread.OnTerminate := btnBKSClickTerminate;
-    Thread.Start;
-  end;
+  s := txtNumber.Text;
+  Delete(s, Length(s), 1);
+  txtNumber.Text := s;
 end;
 
-procedure TNominate.btnNumPadClearClick(Sender: TObject);
+procedure TNominate.btnClearClick(Sender: TObject);
 begin
-  lblStatusBar.Text := '';
-  edtMembershipNum.Text := '';
+  txtNumber.Text := '';
 end;
 
-procedure TNominate.btnNumPadOKClick(Sender: TObject);
+procedure TNominate.btnEnterClick(Sender: TObject);
 var
   Number: Integer;
 begin
   lblStatusBar.Text := '';
-  // Are we connected?
-  if (Assigned(SCM) and SCM.IsActive) then
-  begin
+  if not Assigned(SCM) then exit;
+  if not SCM.IsActive then exit;
+  if bsEvent.DataSet.IsEmpty then exit;
+
+
     // extract integer.
-    Number := StrToIntDef(edtMembershipNum.Text, 0);
+    Number := StrToIntDef(txtNumber.Text, 0);
     // Does the membership number exist?
     if ((Number > 0) and SCM.IsValidMembershipNum(Number)) then
     begin
@@ -612,11 +418,9 @@ begin
             // re-create the ListBox Items and assign objects
             scmBuildlbxItems(fMemberNomObjects);
             // get the members fullname ...
-            edtMemberFullName.Text := SCM.GetMemberFName(fCurrmemberID);
+            edtMemberFullName.Text := SCM.GetMemberFName(fCurrMemberID);
             // switch to tab showing Nomination ListBox.
-            tabMembershipNum.Visible := false;
-            tabNominate.Visible := true;
-            TabControl1.TabIndex := 2;
+            TabControl1.Next;
           end
           else
           begin
@@ -639,7 +443,8 @@ begin
 {$IFDEF MSWINDOWS}
         MessageBeep(MB_ICONERROR);
 {$ENDIF}
-        lblStatusBar.Text := 'Member''s ID not found or not a swimmer or not active or is archived.';
+        lblStatusBar.Text :=
+          'Member''s ID not found or not a swimmer or not active or is archived.';
       end;
     end
     else
@@ -649,7 +454,7 @@ begin
 {$ENDIF}
       lblStatusBar.Text := 'The membership number wasn''t found.';
     end;
-  end
+
 end;
 
 procedure TNominate.btnPostClick(Sender: TObject);
@@ -663,15 +468,15 @@ begin
   begin
     // show confirmation tabsheet
     tabNominate.Visible := false;
-    tabConfimNominated.Visible := true;
+    tabConfirmNominated.Visible := true;
     TabControl1.TabIndex := 3;
   end
   else
   begin
     // switch to MembershipNum Tab
     tabNominate.Visible := false;
-    tabConfimNominated.Visible := false;
-    edtmembershipNum.Text := '';
+    tabConfirmNominated.Visible := false;
+    txtNumber.Text := '';
     fCurrMemberID := 0;
     tabMembershipNum.Visible := true;
     TabControl1.TabIndex := 1;
@@ -690,13 +495,14 @@ begin
   lblStatusBar.Text := '';
   if (Assigned(SCM) and SCM.IsActive) then
   begin
-      if Assigned(fMemberNomObjects) then
-      begin
-        // re-create the objects for the ListBox
-        scmBuildMemberNomObjects(0);
-        // re-create the ListBox Items and assign objects
-        scmBuildlbxItems(fMemberNomObjects);
-      end;
+    Refresh_Events;
+    if Assigned(fMemberNomObjects) then
+    begin
+      // re-create the objects for the ListBox
+      scmBuildMemberNomObjects(0);
+      // re-create the ListBox Items and assign objects
+      scmBuildlbxItems(fMemberNomObjects);
+    end;
   end;
 end;
 
@@ -740,21 +546,9 @@ begin
   // Connect button vivibility
   UpdateAction(actnConnect);
   // Display of layout panels (holding TListView grids).
-  Update_Layout;
 
-end;
+  Status_ConnectionDescription;
 
-procedure TNominate.edtMembershipNumKeyDown(Sender: TObject; var Key: Word;
-var KeyChar: Char; Shift: TShiftState);
-begin
-  if Key = VK_RETURN then
-  begin
-    // test for DONE.
-    if edtMembershipNum.ReturnKeyType = TReturnKeyType.Done then
-    begin
-      btnNumPadOKClick(Self);
-    end;
-  end;
 end;
 
 procedure TNominate.FormCreate(Sender: TObject);
@@ -764,18 +558,26 @@ begin
   AniIndicator1.Visible := false;
   AniIndicator1.Enabled := false;
   btnDisconnect.Visible := false;
+  fLoginTimeOut := CONNECTIONTIMEOUT; // DEFAULT 20 - defined in ProgramSetting
   fConnectionCountdown := CONNECTIONTIMEOUT;
   fShowConfirmationDlg := false;
   Timer1.Enabled := false;
   lblAniIndicatorStatus.Visible := false;
   fCurrMemberID := 0;
   fIsBuildinglbx := false;
+  txtNumber.Text := '';
+
+  // r e m o v e   p r o m p t    m e s s a g e s .
+  // minimal clutter in the display.
+  txtEnterNumberMsg.Visible := false;
+  txtPostToCompleteMsg.Visible := false;
 
   // A Class that uses JSON to read and write application configuration
   if Settings = nil then
     Settings := TPrgSetting.Create;
 
   cmbSessionList.Items.Clear;
+  cmbSwimClubList.Items.Clear;
   lbxNominate.Items.Clear;
 
   // C R E A T E   T H E   D A T A M O D U L E .
@@ -793,21 +595,14 @@ begin
   TabControl1.TabIndex := 0;
 
   // Connection status - located in footer bar.
-  lblStatusBar.Text := 'NOT CONNECTED';
-
-  edtMembershipNum.Text := '';
-  // actnToggleMode.AutoChecked is disabled - ASSERT AdminMode.
-  actnToggleMode.Checked := false;
-  // only login visible on boot
-  tabLoginSession.Visible := true;
-  tabConfimNominated.Visible := false;
-  tabMembershipNum.Visible := false;
-  tabNominate.Visible := false;
-
+  Status_ConnectionDescription;
 
   // prep lbxNominate
   fMemberNomObjects := TObjectList.Create(true);
-  FMemberNomObjects.OwnsObjects := true;
+  fMemberNomObjects.OwnsObjects := true;
+
+  // T A B  V I S I B I L I T Y .
+  TabControl1.TabPosition := TTabPosition.None;
 end;
 
 procedure TNominate.FormDestroy(Sender: TObject);
@@ -860,7 +655,7 @@ end;
 
 procedure TNominate.lbxNominateChangeCheck(Sender: TObject);
 var
-obj: TMemberNom;
+  obj: TMemberNom;
 begin
   if fIsBuildinglbx = false then
   begin
@@ -868,7 +663,8 @@ begin
     begin
       obj := TMemberNom(lbxNominate.Items.Objects[lbxNominate.ItemIndex]);
       if Assigned(obj) then
-        obj.IsNominated := lbxNominate.ListItems[lbxNominate.ItemIndex].IsChecked;
+        obj.IsNominated := lbxNominate.ListItems[lbxNominate.ItemIndex]
+          .IsChecked;
     end;
   end;
 end;
@@ -914,22 +710,22 @@ end;
 
 procedure TNominate.scmBuildlbxItems(objList: TObjectList);
 var
-I, index: integer;
-obj: TMemberNom;
-lbxi: TListBoxItem;
+  I, index: Integer;
+  obj: TMemberNom;
+  lbxi: TListBoxItem;
 begin
-    lbxNominate.Items.Clear;
-    for I := 0 to objList.Count -1 do
-    begin
-      obj := TMemberNom(objList.Items[I]);
-      // fill lbx with items
-      index := lbxNominate.Items.AddObject(obj.Title, obj);
-      lbxi := lbxNominate.ListItems[index];
-      lbxi.ItemData.Detail := obj.Description;
-      fIsBuildinglbx := true;
-      lbxNominate.ListItems[index].IsChecked := obj.IsNominated;
-      fIsBuildinglbx := false;
-    end;
+  lbxNominate.Items.Clear;
+  for I := 0 to objList.Count - 1 do
+  begin
+    obj := TMemberNom(objList.Items[I]);
+    // fill lbx with items
+    index := lbxNominate.Items.AddObject(obj.Title, obj);
+    lbxi := lbxNominate.ListItems[index];
+    lbxi.ItemData.Detail := obj.Description;
+    fIsBuildinglbx := true;
+    lbxNominate.ListItems[index].IsChecked := obj.IsNominated;
+    fIsBuildinglbx := false;
+  end;
 end;
 
 procedure TNominate.scmBuildMemberNomObjects(MemberID: Integer);
@@ -961,13 +757,16 @@ begin
             obj.DistanceID := SCM.qryEvent.FieldByName('DistanceID').AsInteger;
             obj.StrokeID := SCM.qryEvent.FieldByName('StrokeID').AsInteger;
             obj.Title := SCM.qryEvent.FieldByName('ListTextStr').AsString;
-            obj.Description := SCM.qryEvent.FieldByName('ListDetailStr').AsString;
+            obj.Description := SCM.qryEvent.FieldByName
+              ('ListDetailStr').AsString;
             obj.MemberID := MemberID;
-            obj.EventStatusID := SCM.qryEvent.FieldByName('EventStatusID').AsInteger;
+            obj.EventStatusID := SCM.qryEvent.FieldByName('EventStatusID')
+              .AsInteger;
 
             // CALL SQLEXPRESS SCALAR FUNCTION
             // NOTE : uses scmConnection.ExecSQLScalar
-            if SCM.IsMemberQualified(MemberID, obj.DistanceID, obj.StrokeID) then
+            if SCM.IsMemberQualified(MemberID, obj.DistanceID, obj.StrokeID)
+            then
             begin
               obj.Description := '(Qualified) ' + obj.Description;
               obj.IsQualified := true; // on create - default is false;
@@ -986,26 +785,25 @@ begin
   end;
 end;
 
-
 procedure TNominate.PostNominations;
 var
-  EntrantID, i: Integer;
+  EntrantID, I: Integer;
   obj: TMemberNom;
-  IsNominatedInDB: boolean;
+  IsNominatedInDB: Boolean;
 begin
   if (Assigned(SCM) and SCM.IsActive) then
   begin
     if Assigned(fMemberNomObjects) then
     begin
-      for i := 0 to fMemberNomObjects.Count - 1 do
+      for I := 0 to fMemberNomObjects.Count - 1 do
       begin
         // WHAT THE MEMBER ELECTED TO DO ...
-        obj := TMemberNom(fMemberNomObjects.Items[i]);
+        obj := TMemberNom(fMemberNomObjects.Items[I]);
         // WHAT THE MEMBER'S NOMINATION STATUS IS IN THE DATABASE ...
         IsNominatedInDB := SCM.IsMemberNominated(obj.MemberID, obj.EventID);
 
         // The member is nominated in this event in the DATABASE ...
-        if IsNominatedInDB  then
+        if IsNominatedInDB then
         begin
           // SYNCED nothing to do ...
           if obj.IsNominated then
@@ -1050,6 +848,18 @@ begin
   end;
 end;
 
+procedure TNominate.Refresh_Events;
+begin
+  if Assigned(SCM) and SCM.qrySession.Active then
+  begin
+    lbxNominate.Items.Clear;
+    bsEvent.dataSet.DisableControls;
+    bsEvent.DataSet.Close;
+    bsEvent.DataSet.Open;
+    bsEvent.dataSet.EnableControls;
+  end;
+end;
+
 procedure TNominate.Status_ConnectionDescription;
 begin
   if Assigned(SCM) and SCM.IsActive then
@@ -1059,40 +869,34 @@ begin
     lblStatusBar.Text := lblStatusBar.Text + GetSCMVerInfo;
     lblStatusBar.Text := lblStatusBar.Text + sLineBreak +
       bsSwimClub.DataSet.FieldByName('Caption').AsString;
-  end;
-end;
-
-procedure TNominate.Status_EventDescription;
-begin
-  if Assigned(SCM) and SCM.IsActive then
-  begin
-    // S T A T U S   L I N E .
-    // E V E N T   D E S C R I P T I O  N  .
-    // Distance Stroke, NOM and ENT count ....
-    lblStatusBar.Text := bsEvent.DataSet.FieldByName
-      ('ListDetailStr').AsString;
   end
   else
-      lblStatusBar.Text := '';
+    lblStatusBar.Text := 'NOT CONNECTED. ';
 end;
 
 procedure TNominate.TabControl1Change(Sender: TObject);
 begin
-  if TabControl1.TabIndex = 1 then
-  begin
-    edtMembershipNum.SetFocus;
+  case TabControl1.TabIndex of
+    0:
+      begin
+        Status_ConnectionDescription;
+      end;
+    1:
+      begin
+        lblStatusBar.Text := '';
+        txtNumber.SetFocus;
+      end;
+    2:
+      begin
+        lblStatusBar.Text := '';
+      end;
+    3:
+      begin
+        lblStatusBar.Text := '';
+      end;
   end;
 end;
 
-procedure TNominate.Update_EntrantStat;
-begin
-
-end;
-
-procedure TNominate.Update_Layout;
-begin
-
-end;
 
 procedure TNominate.Update_SessionVisibility;
 begin
@@ -1119,11 +923,6 @@ begin
     SCM.qrySession.ParamByName('HIDECLOSED').AsBoolean :=
       chkbSessionVisibility.IsChecked;
   end;
-end;
-
-procedure TNominate.Update_TabSheetCaptions;
-begin
-
 end;
 
 { TDefaultFont }

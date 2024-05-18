@@ -1,4 +1,5 @@
 object SCM: TSCM
+  OnCreate = DataModuleCreate
   Height = 870
   Width = 717
   object scmConnection: TFDConnection
@@ -12,6 +13,7 @@ object SCM: TSCM
   end
   object tblSwimClub: TFDTable
     ActiveStoredUsage = [auDesignTime]
+    Active = True
     IndexFieldNames = 'SwimClubID'
     Connection = scmConnection
     FormatOptions.AssignedValues = [fvFmtDisplayNumeric]
@@ -98,6 +100,7 @@ object SCM: TSCM
     IndexFieldNames = 'SwimClubID'
     MasterSource = dsSwimClub
     MasterFields = 'SwimClubID'
+    DetailFields = 'SwimClubID'
     Connection = scmConnection
     FormatOptions.AssignedValues = [fvFmtDisplayDateTime]
     FormatOptions.FmtDisplayDateTime = 'dddd dd/mm/yyyy HH:nn'
@@ -151,6 +154,7 @@ object SCM: TSCM
   end
   object qryEvent: TFDQuery
     ActiveStoredUsage = [auDesignTime]
+    Active = True
     IndexFieldNames = 'SessionID'
     MasterSource = dsSession
     MasterFields = 'SessionID'
@@ -221,6 +225,7 @@ object SCM: TSCM
   end
   object qryMember: TFDQuery
     ActiveStoredUsage = [auDesignTime]
+    Active = True
     IndexFieldNames = 'MemberID'
     Connection = scmConnection
     UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
