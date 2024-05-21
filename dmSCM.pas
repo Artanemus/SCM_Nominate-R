@@ -44,6 +44,7 @@ type
     tblSwimClubNumOfLanes: TIntegerField;
     tblSwimClubSwimClubID: TFDAutoIncField;
     tblSwimClubWebSite: TWideStringField;
+    qrySessionNominations: TFDQuery;
     procedure DataModuleCreate(Sender: TObject);
   private
   const
@@ -66,6 +67,7 @@ type
     function IsMemberEntrant(MemberID, EventID: Integer): Integer;
     { Public declarations }
     function IsMemberNominated(MemberID, EventID: Integer): Boolean;
+    function UpdateSessionNominations(SessionID, MemberID: Integer): Boolean;
     function IsMemberQualified(MemberID, DistanceID, StrokeID: Integer)
       : Boolean;
     function IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
@@ -315,9 +317,22 @@ begin
 
 end;
 
+function TSCM.UpdateSessionNominations(SessionID, MemberID: Integer): Boolean;
+begin
+  result := false;
+  if scmConnection.Connected then
+  begin
+    if qrySessionNominations.Active then
+      qrySessionNominations.Close;
 
+    qrySessionNominations.ParamByName('MEMBERID').AsInteger := MemberID;
+    qrySessionNominations.ParamByName('SESSIONID').AsInteger := SessionID;
+    qrySessionNominations.Prepare;
 
-
-
+    qrySessionNominations.Open;
+    if qrySessionNominations.Active then
+        result := True;
+  end;
+end;
 
 end.

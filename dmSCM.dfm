@@ -97,6 +97,7 @@ object SCM: TSCM
   object qrySession: TFDQuery
     ActiveStoredUsage = [auDesignTime]
     Active = True
+    Filter = 'SessionStatusID = 1'
     IndexFieldNames = 'SwimClubID'
     MasterSource = dsSwimClub
     MasterFields = 'SwimClubID'
@@ -107,10 +108,6 @@ object SCM: TSCM
     UpdateOptions.UpdateTableName = 'SwimClubMeet..Session'
     UpdateOptions.KeyFields = 'SessionID'
     SQL.Strings = (
-      'USE SwimClubMeet;'
-      ''
-      'DECLARE @HideClosed AS BIT;'
-      'SET @HideClosed = :HIDECLOSED;'
       ''
       'SELECT Session.SessionID'
       '    , Session.SessionStart'
@@ -125,32 +122,27 @@ object SCM: TSCM
       
         '    , Format(SessionStart, '#39'dddd dd/MM/yyyy HH:mm'#39') AS SessionSt' +
         'artStr'
-      '    , CONCAT ('
-      '        Format(SessionStart, '#39'dd/MM/yyyy HH:mm'#39')'
-      '        , IIF(Session.SessionStatusID = 1, '#39' '#39', '#39' (LOCKED) '#39')'
-      '        , [Session].Caption'
-      '        ) AS SessionDetailStr'
-      'FROM Session'
+      '    , '
+      '    CASE '
+      '       WHEN SessionStatusID = 1'
+      '       THEN'
+      
+        '       CONCAT( Format(SessionStart, '#39'yyyy-MM-dd HH:mm '#39'), Sessio' +
+        'n.Caption)'
+      '       ELSE'
+      
+        '       CONCAT( Format(SessionStart, '#39'yyyy-MM-dd'#39') , '#39'  (LOCKED) ' +
+        #39')'
+      '       END AS SessionDetailStr'
+      '    '
       ''
-      
-        '-- WHERE (Session.SessionStatusID = 1) OR Session.SessionStatusI' +
-        'D = CASE WHEN @HideClosed=1 THEN 1 ELSE 2 END'
-      
-        'WHERE (@HideClosed = 0 AND Session.SessionStatusID = 2) OR (Sess' +
-        'ion.SessionStatusID = 1)'
+      'FROM Session'
       ''
       'ORDER BY Session.SessionStart DESC'
       ''
       '')
     Left = 48
     Top = 264
-    ParamData = <
-      item
-        Name = 'HIDECLOSED'
-        DataType = ftBoolean
-        ParamType = ptInput
-        Value = True
-      end>
   end
   object qryEvent: TFDQuery
     ActiveStoredUsage = [auDesignTime]
@@ -178,22 +170,8 @@ object SCM: TSCM
       '        , Distance.Caption'
       '        , '#39' '#39
       '        , Stroke.Caption'
-      ', '#39'. '#39
-      ', Event.Caption'
       '        ) AS ListTextStr'
-      '    , CONCAT ('
-      '        '#39'Event '#39
-      '        , Event.EventNum'
-      '        , '#39' - '#39
-      '        , Distance.Caption'
-      '        , '#39' '#39
-      '        , Stroke.Caption'
-      '        , '#39' (NOM:'#39
-      '        , NomineeCount'
-      '        , '#39' ENT:'#39
-      '        , EntrantCount'
-      '        , '#39')'#39
-      '        ) AS ListDetailStr'
+      '    , Event.Caption AS ListDetailStr'
       ''
       'FROM Event'
       'LEFT OUTER JOIN Stroke'
@@ -411,7 +389,7 @@ object SCM: TSCM
     UpdateOptions.EnableInsert = False
     UpdateOptions.EnableUpdate = False
     SQL.Strings = (
-      'USE SwimClubMeet;'
+      ''
       'DECLARE @MemberID INTEGER;'
       'DECLARE @DistanceID INTEGER;'
       'DECLARE @StrokeID INTEGER;'
@@ -663,5 +641,40 @@ object SCM: TSCM
     DataSet = qrySCMSystem
     Left = 56
     Top = 520
+  end
+  object qrySessionNominations: TFDQuery
+    Connection = scmConnection
+    SQL.Strings = (
+      'USE SwimClubMeet;'
+      ''
+      'DECLARE @MemberID INTEGER;'
+      'DECLARE @SessionID INTEGER;'
+      ''
+      'SET @MemberID = :MEMBERID;'
+      'SET @SessionID = :SESSIONID;'
+      ''
+      
+        'SELECT Event.SessionID, Nominee.NomineeID, Nominee.EventID, Nomi' +
+        'nee.MemberID FROM Nominee'
+      'INNER JOIN Event ON Nominee.EventID = Event.EventID'
+      
+        'WHERE Event.SessionID = @SessionID AND Nominee.MemberID = @Membe' +
+        'rID'
+      'ORDER BY Nominee.EventID;')
+    Left = 496
+    Top = 104
+    ParamData = <
+      item
+        Name = 'MEMBERID'
+        DataType = ftInteger
+        ParamType = ptInput
+        Value = 2
+      end
+      item
+        Name = 'SESSIONID'
+        DataType = ftInteger
+        ParamType = ptInput
+        Value = 120
+      end>
   end
 end

@@ -1,181 +1,117 @@
 ﻿[layConnectButtons]
-Coordinates=984,654,108,33
+Coordinates=250,647,108,33
 
 [ActionList1]
 Coordinates=642,333,70,33
 
-[btn02]
-Coordinates=280,570,41,51
-
 [tabNominate]
-Coordinates=1355,654,76,33
+Coordinates=316,724,76,33
 
 [actnRefresh]
 Coordinates=642,437,73,33
 
 [Layout3]
-Coordinates=849,738,53,33
+Coordinates=130,783,53,33
 
 [TabControl1]
-Coordinates=738,738,74,33
+Coordinates=462,647,74,33
 
 [laySelectSession]
-Coordinates=1368,738,98,33
-
-[btn09]
-Coordinates=10,486,41,51
+Coordinates=418,724,98,33
 
 [actnConnect]
 Coordinates=266,519,76,33
 
-[StyleBook2]
-Coordinates=187,519,70,33
-
 [edtPassword]
-Coordinates=1234,486,78,51
+Coordinates=77,339,78,51
 
 [Label8]
-Coordinates=83,486,46,51
+Coordinates=292,493,46,51
 
 [tabLoginSession]
-Coordinates=1219,654,97,33
-
-[btn04]
-Coordinates=431,402,41,51
+Coordinates=542,724,97,33
 
 [layMemberShipNum]
-Coordinates=348,738,113,33
+Coordinates=1211,647,113,33
 
 [Label12]
-Coordinates=583,402,52,51
-
-[btn03]
-Coordinates=791,402,41,51
-
-[btn05]
-Coordinates=332,654,41,51
+Coordinates=10,647,52,51
 
 [actnSCMOptions]
 Coordinates=788,53,97,33
 
-[btn07]
-Coordinates=655,570,41,51
-
 [Layout1]
-Coordinates=10,738,53,33
+Coordinates=89,724,53,33
 
 [Label7]
-Coordinates=94,654,46,51
+Coordinates=1228,493,46,51
 
 [btnConnect]
-Coordinates=864,402,71,51
+Coordinates=685,570,71,51
 
 [actnDisconnect]
 Coordinates=788,157,91,33
 
-[FlowLayoutBreak1]
-Coordinates=10,800,105,33
-
-[Layout2]
-Coordinates=1078,800,53,33
-
-[btn01]
-Coordinates=1406,570,41,51
-
-[btn06]
-Coordinates=173,654,41,51
-
 [lblSelectSession]
-Coordinates=728,570,96,51
-
-[FlowLayoutBreak2]
-Coordinates=837,654,105,33
+Coordinates=907,493,96,51
 
 [Timer1]
 Coordinates=788,417,48,33
 
-[FlowLayout1]
-Coordinates=763,800,77,33
-
 [lblAniIndicatorStatus]
-Coordinates=272,402,117,51
+Coordinates=149,493,117,51
 
 [layTabs]
-Coordinates=1282,738,52,33
+Coordinates=384,647,52,33
 
 [AniIndicator1]
-Coordinates=876,800,80,33
+Coordinates=834,647,80,33
 
 [tabMembershipNum]
-Coordinates=384,800,113,33
+Coordinates=665,724,113,33
 
 [layLoginToServer]
-Coordinates=157,800,101,33
-
-[edtMemberFullName]
-Coordinates=952,570,115,51
-
-[FlowLayoutBreak5]
-Coordinates=505,738,105,33
-
-[btn08]
-Coordinates=1176,402,41,51
+Coordinates=804,724,101,33
 
 [SizeGrip1]
-Coordinates=666,800,61,33
+Coordinates=1144,724,61,33
 
 [ScaledLayout1]
-Coordinates=540,800,87,33
+Coordinates=1098,647,87,33
 
 [actnQualify]
 Coordinates=939,105,70,33
 
 [btnRefresh]
-Coordinates=734,654,68,51
+Coordinates=364,493,68,51
 
 [cmbSessionList]
-Coordinates=851,54,93,123
+Coordinates=1259,46,93,123
 Visible=True
 
 [edtUser]
-Coordinates=246,654,52,51
-
-[btn00]
-Coordinates=199,402,41,51
+Coordinates=1054,570,52,51
 
 [Label18]
-Coordinates=1222,570,52,51
-
-[FlowLayoutBreak3]
-Coordinates=1029,738,105,33
+Coordinates=1132,570,52,51
 
 [btnDisconnect]
-Coordinates=669,402,85,51
+Coordinates=323,339,85,51
 
 [layFooter]
-Coordinates=935,738,60,33
+Coordinates=672,647,60,33
 
 [actnNominateOk]
 Coordinates=939,453,96,33
 
 [btnToggle]
-Coordinates=1308,570,64,51
-
-[Layout4]
-Coordinates=262,738,53,33
-
-[Layout5]
-Coordinates=1133,654,53,33
+Coordinates=782,570,64,51
 
 [BindingsList1]
 Coordinates=536,242,82,33
 
 []
-Coordinates=827,560,113,51
-Visible=True
-
-[lbxNominate]
-Coordinates=517,21,116,213
+Coordinates=187,519,70,33
 Visible=True
 
 [SCM.]
@@ -185,136 +121,197 @@ Coordinates=234,1,76,33
 Coordinates=939,609,96,33
 
 [SCM.qryIsQualified_ORG]
-Coordinates=606,486,137,51
+Coordinates=967,339,137,51
 
 [btnPost]
-Coordinates=10,654,52,51
+Coordinates=470,570,52,51
 
 [Layout9]
-Coordinates=652,738,53,33
+Coordinates=940,647,53,33
 
 [Image1]
-Coordinates=523,486,49,51
-
-[Layout7]
-Coordinates=298,800,53,33
+Coordinates=181,339,49,51
 
 [Layout8]
-Coordinates=992,800,53,33
+Coordinates=1019,647,53,33
 
 [Label4]
-Coordinates=162,486,46,51
+Coordinates=268,416,46,51
 
 [Label3]
-Coordinates=353,570,46,51
+Coordinates=77,493,46,51
 
 [btnConfirmNominated]
-Coordinates=1249,402,123,51
+Coordinates=1210,570,123,51
 
 [lblSelectSwimClub]
-Coordinates=133,570,106,51
+Coordinates=1029,493,106,51
 
 [StyleBook1]
 Coordinates=779,359,70,33
 
 [chkbSessionVisibility]
-Coordinates=494,654,120,51
+Coordinates=1130,416,120,51
 
 [cmbSwimClubList]
-Coordinates=219,120,103,123
+Coordinates=453,91,103,123
 Visible=True
 
 [edtServerName]
-Coordinates=241,486,89,51
+Coordinates=570,493,89,51
 
 [chkbUseOsAuthentication]
-Coordinates=10,402,143,51
+Coordinates=753,416,143,51
 
 [chkboxShowConfirmationDlg]
-Coordinates=970,402,158,51
+Coordinates=506,339,158,51
 
 [lblStatusBar]
-Coordinates=1112,570,74,51
+Coordinates=954,570,74,51
 
 [bsSession]
-Coordinates=1036,10,85,195
-
-[bsSwimClub]
-Coordinates=362,10,108,285
+Coordinates=1094,10,85,195
 
 [bsEvent]
-Coordinates=736,10,75,231
-
-[btnBackSpace]
-Coordinates=432,570,85,51
-
-[btnClear]
-Coordinates=863,570,56,51
-
-[btnEnter]
-Coordinates=405,654,56,51
+Coordinates=872,10,75,231
 
 [tabConfirmNominated]
-Coordinates=96,738,122,33
+Coordinates=168,724,122,33
 
 [txtNumber]
-Coordinates=555,570,65,51
+Coordinates=10,570,65,51
 
 [Rectangle1]
-Coordinates=1176,738,69,33
-
-[SCM.dsMember]
-Coordinates=1023,78,91,33
-
-[SCM.qrySession]
-Coordinates=1163,10,95,195
-
-[SCM.dsEvent]
-Coordinates=1023,232,80,33
-
-[SCM.dsSCMSystem]
-Coordinates=1100,1,111,33
-
-[SCM.qrySCMSystem]
-Coordinates=936,486,115,51
-
-[SCM.dsSwimClub]
-Coordinates=701,828,101,33
+Coordinates=155,647,69,33
 
 [SCM.qryIsEntrant]
-Coordinates=794,486,100,51
-
-[SCM.qryEvent]
-Coordinates=10,570,84,51
+Coordinates=627,416,100,51
 
 [SCM.qryIsNominated]
-Coordinates=1349,486,117,51
-
-[SCM.qryMember]
-Coordinates=1097,486,95,51
-
-[SCM.dsSession]
-Coordinates=83,154,91,33
+Coordinates=690,339,117,51
 
 [SCM.qryIsQualified]
-Coordinates=371,486,108,51
-
-[SCM.tblSwimClub]
-Coordinates=10,10,102,33
-Visible=False
-
-[BindSourceDB1]
-Coordinates=10,10,108,303
+Coordinates=833,339,108,51
 
 [txtEnterNumberMsg]
-Coordinates=504,402,112,51
+Coordinates=101,570,112,51
 
 [txtPostToCompleteMsg]
-Coordinates=655,654,129,51
+Coordinates=685,493,129,51
 
-[Layout10]
-Coordinates=137,1,59,33
+[layPostMessage]
+Coordinates=10,783,94,33
 
-[Layout6]
-Coordinates=137,53,53,33
+[layPostButton]
+Coordinates=562,647,84,33
+
+[btnClear]
+Coordinates=872,570,56,51
+
+[layPost]
+Coordinates=758,647,50,33
+
+[btnBackSpace]
+Coordinates=1210,339,85,51
+
+[imgBackSpaceCntrl]
+Coordinates=548,570,111,51
+
+[btn06]
+Coordinates=336,570,41,51
+
+[Layout11]
+Coordinates=931,724,59,33
+
+[btn03]
+Coordinates=403,570,41,51
+
+[btnGetTime]
+Coordinates=239,570,71,51
+
+[Label1]
+Coordinates=434,339,46,51
+
+[btn07]
+Coordinates=256,339,41,51
+
+[layContents]
+Coordinates=1231,724,73,33
+
+[btn05]
+Coordinates=422,416,41,51
+
+[btn01]
+Coordinates=1161,493,41,51
+
+[btn00]
+Coordinates=10,493,41,51
+
+[btn09]
+Coordinates=922,416,41,51
+
+[btn02]
+Coordinates=88,647,41,51
+
+[btnEnter]
+Coordinates=340,416,56,51
+
+[ImageControl2]
+Coordinates=458,493,86,51
+
+[GridPanelLayout1]
+Coordinates=1016,724,102,33
+
+[btn08]
+Coordinates=840,493,41,51
+
+[btn04]
+Coordinates=10,339,41,51
+
+[lbxNominate]
+Coordinates=692,10,100,231
+Visible=True
+
+[bsSwimClub]
+Coordinates=265,10,108,285
+
+[txtMemberFullName]
+Coordinates=489,416,112,51
+Visible=True
+
+[ImageList1]
+Coordinates=175,1,68,33
+
+[SCM.qrySessionNominations]
+Coordinates=85,416,157,51
+
+[SCM.tblSwimClub]
+Coordinates=131,10,108,285
+
+[SCM.qrySession]
+Coordinates=973,10,95,195
+
+[SCM.dsSCMSystem]
+Coordinates=319,305,111,33
+
+[SCM.dsSwimClub]
+Coordinates=667,1247,101,33
+
+[SCM.qrySCMSystem]
+Coordinates=989,416,115,51
+
+[SCM.qryEvent]
+Coordinates=582,10,84,231
+
+[SCM.dsEvent]
+Coordinates=519,1,80,33
+
+[SCM.qryMember]
+Coordinates=10,10,95,303
+
+[SCM.dsMember]
+Coordinates=15,322,91,33
+
+[SCM.dsSession]
+Coordinates=519,294,91,33
 

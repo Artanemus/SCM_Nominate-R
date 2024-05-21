@@ -24,6 +24,7 @@ type
     OSAuthent: boolean;
     SessionVisibility: boolean;
     ShowConfirmationDlg: boolean;
+    ShowExtraText: boolean;
     LoginTimeOut: integer;
 
     constructor Create();
@@ -52,7 +53,7 @@ begin
   SessionVisibility := true;
   ShowConfirmationDlg := true;
   LoginTimeOut := CONNECTIONTIMEOUT;
-
+  ShowExtraText := false;
   {
   ForceDirectories creates a new directory as specified in Dir,
   which must be a fully-qualified path name. If the directories given in
