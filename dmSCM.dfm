@@ -13,7 +13,6 @@ object SCM: TSCM
   end
   object tblSwimClub: TFDTable
     ActiveStoredUsage = [auDesignTime]
-    Active = True
     IndexFieldNames = 'SwimClubID'
     Connection = scmConnection
     FormatOptions.AssignedValues = [fvFmtDisplayNumeric]
@@ -96,7 +95,6 @@ object SCM: TSCM
   end
   object qrySession: TFDQuery
     ActiveStoredUsage = [auDesignTime]
-    Active = True
     Filter = 'SessionStatusID = 1'
     IndexFieldNames = 'SwimClubID'
     MasterSource = dsSwimClub
@@ -105,6 +103,10 @@ object SCM: TSCM
     Connection = scmConnection
     FormatOptions.AssignedValues = [fvFmtDisplayDateTime]
     FormatOptions.FmtDisplayDateTime = 'dddd dd/mm/yyyy HH:nn'
+    UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
+    UpdateOptions.EnableDelete = False
+    UpdateOptions.EnableInsert = False
+    UpdateOptions.EnableUpdate = False
     UpdateOptions.UpdateTableName = 'SwimClubMeet..Session'
     UpdateOptions.KeyFields = 'SessionID'
     SQL.Strings = (
@@ -143,10 +145,52 @@ object SCM: TSCM
       '')
     Left = 48
     Top = 264
+    object qrySessionSessionID: TFDAutoIncField
+      FieldName = 'SessionID'
+      Origin = 'SessionID'
+      ProviderFlags = [pfInWhere, pfInKey]
+    end
+    object qrySessionSessionStart: TSQLTimeStampField
+      FieldName = 'SessionStart'
+      Origin = 'SessionStart'
+      DisplayFormat = 'dddd dd/mm/yyyy HH:nn'
+    end
+    object qrySessionSwimClubID: TIntegerField
+      FieldName = 'SwimClubID'
+      Origin = 'SwimClubID'
+    end
+    object qrySessionSessionStatusID: TIntegerField
+      FieldName = 'SessionStatusID'
+      Origin = 'SessionStatusID'
+    end
+    object qrySessionSessionStatusStr: TStringField
+      FieldName = 'SessionStatusStr'
+      Origin = 'SessionStatusStr'
+      ReadOnly = True
+      Required = True
+      Size = 10
+    end
+    object qrySessionCaption: TWideStringField
+      FieldName = 'Caption'
+      Origin = 'Caption'
+      Size = 128
+    end
+    object qrySessionSessionStartStr: TWideStringField
+      FieldName = 'SessionStartStr'
+      Origin = 'SessionStartStr'
+      ReadOnly = True
+      Size = 4000
+    end
+    object qrySessionSessionDetailStr: TWideStringField
+      FieldName = 'SessionDetailStr'
+      Origin = 'SessionDetailStr'
+      ReadOnly = True
+      Required = True
+      Size = 4000
+    end
   end
   object qryEvent: TFDQuery
     ActiveStoredUsage = [auDesignTime]
-    Active = True
     IndexFieldNames = 'SessionID'
     MasterSource = dsSession
     MasterFields = 'SessionID'
@@ -170,8 +214,8 @@ object SCM: TSCM
       '        , Distance.Caption'
       '        , '#39' '#39
       '        , Stroke.Caption'
-      '        ) AS ListTextStr'
-      '    , Event.Caption AS ListDetailStr'
+      '        ) AS Title'
+      '    , CONCAT ('#39'- '#39', Event.Caption) AS Detail'
       ''
       'FROM Event'
       'LEFT OUTER JOIN Stroke'
@@ -200,10 +244,58 @@ object SCM: TSCM
       'ORDER BY Event.EventNum;')
     Left = 40
     Top = 336
+    object qryEventEventID: TFDAutoIncField
+      FieldName = 'EventID'
+      Origin = 'EventID'
+      ProviderFlags = [pfInWhere, pfInKey]
+    end
+    object qryEventEventNum: TIntegerField
+      FieldName = 'EventNum'
+      Origin = 'EventNum'
+    end
+    object qryEventNomineeCount: TIntegerField
+      FieldName = 'NomineeCount'
+      Origin = 'NomineeCount'
+      ReadOnly = True
+    end
+    object qryEventEntrantCount: TIntegerField
+      FieldName = 'EntrantCount'
+      Origin = 'EntrantCount'
+      ReadOnly = True
+    end
+    object qryEventSessionID: TIntegerField
+      FieldName = 'SessionID'
+      Origin = 'SessionID'
+    end
+    object qryEventStrokeID: TIntegerField
+      FieldName = 'StrokeID'
+      Origin = 'StrokeID'
+    end
+    object qryEventDistanceID: TIntegerField
+      FieldName = 'DistanceID'
+      Origin = 'DistanceID'
+    end
+    object qryEventEventStatusID: TIntegerField
+      FieldName = 'EventStatusID'
+      Origin = 'EventStatusID'
+    end
+    object qryEventTitle: TWideStringField
+      FieldName = 'Title'
+      Origin = 'Title'
+      ReadOnly = True
+      Required = True
+      Size = 4000
+    end
+    object qryEventDetail: TWideStringField
+      FieldName = 'Detail'
+      Origin = 'Detail'
+      ReadOnly = True
+      Required = True
+      Size = 130
+    end
   end
   object qryMember: TFDQuery
     ActiveStoredUsage = [auDesignTime]
-    Active = True
     IndexFieldNames = 'MemberID'
     Connection = scmConnection
     UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
@@ -246,6 +338,73 @@ object SCM: TSCM
         ParamType = ptInput
         Value = Null
       end>
+    object qryMemberMemberID: TFDAutoIncField
+      FieldName = 'MemberID'
+      Origin = 'MemberID'
+      ProviderFlags = [pfInWhere, pfInKey]
+    end
+    object qryMemberMembershipNum: TIntegerField
+      FieldName = 'MembershipNum'
+      Origin = 'MembershipNum'
+    end
+    object qryMemberMembershipStr: TWideStringField
+      FieldName = 'MembershipStr'
+      Origin = 'MembershipStr'
+      Size = 24
+    end
+    object qryMemberFirstName: TWideStringField
+      FieldName = 'FirstName'
+      Origin = 'FirstName'
+      Size = 128
+    end
+    object qryMemberLastName: TWideStringField
+      FieldName = 'LastName'
+      Origin = 'LastName'
+      Size = 128
+    end
+    object qryMemberDOB: TSQLTimeStampField
+      FieldName = 'DOB'
+      Origin = 'DOB'
+    end
+    object qryMemberIsArchived: TBooleanField
+      FieldName = 'IsArchived'
+      Origin = 'IsArchived'
+      Required = True
+    end
+    object qryMemberIsActive: TBooleanField
+      FieldName = 'IsActive'
+      Origin = 'IsActive'
+      Required = True
+    end
+    object qryMemberIsSwimmer: TBooleanField
+      FieldName = 'IsSwimmer'
+      Origin = 'IsSwimmer'
+      Required = True
+    end
+    object qryMemberEmail: TWideStringField
+      FieldName = 'Email'
+      Origin = 'Email'
+      Size = 256
+    end
+    object qryMemberEnableEmailOut: TBooleanField
+      FieldName = 'EnableEmailOut'
+      Origin = 'EnableEmailOut'
+      Required = True
+    end
+    object qryMemberGenderID: TIntegerField
+      FieldName = 'GenderID'
+      Origin = 'GenderID'
+    end
+    object qryMemberSwimClubID: TIntegerField
+      FieldName = 'SwimClubID'
+      Origin = 'SwimClubID'
+    end
+    object qryMemberFName: TWideStringField
+      FieldName = 'FName'
+      Origin = 'FName'
+      ReadOnly = True
+      Size = 60
+    end
   end
   object qryIsQualified_ORG: TFDQuery
     ActiveStoredUsage = [auDesignTime]
@@ -634,13 +793,13 @@ object SCM: TSCM
       'USE SwimClubMeet;'
       ''
       'SELECT * FROM SCMSystem WHERE SCMSystemID = 1;')
-    Left = 56
-    Top = 464
+    Left = 472
+    Top = 192
   end
   object dsSCMSystem: TDataSource
     DataSet = qrySCMSystem
-    Left = 56
-    Top = 520
+    Left = 560
+    Top = 192
   end
   object qrySessionNominations: TFDQuery
     Connection = scmConnection

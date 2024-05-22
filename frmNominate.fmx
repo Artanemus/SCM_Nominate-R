@@ -32,7 +32,7 @@ object Nominate: TNominate
         Size.Height = 651.000000000000000000
         Size.PlatformDefault = False
         TabHeight = 49.000000000000000000
-        TabIndex = 1
+        TabIndex = 0
         TabOrder = 0
         TabPosition = PlatformDefault
         OnChange = TabControl1Change
@@ -52,7 +52,7 @@ object Nominate: TNominate
           TextSettings.Font.Size = 18.000000000000000000
           TextSettings.Trimming = None
           StyledSettings = [Family, Style, FontColor]
-          IsSelected = False
+          IsSelected = True
           Margins.Left = 10.000000000000000000
           Size.Width = 223.000000000000000000
           Size.Height = 49.000000000000000000
@@ -34295,6 +34295,7 @@ object Nominate: TNominate
               Size.PlatformDefault = False
               StyleLookup = 'comboboxstyle'
               TabOrder = 0
+              OnChange = cmbSwimClubListChange
             end
             object chkbSessionVisibility: TCheckBox
               Align = Top
@@ -34355,7 +34356,7 @@ object Nominate: TNominate
           TextSettings.Font.Size = 18.000000000000000000
           TextSettings.Trimming = None
           StyledSettings = [Family, Style, FontColor]
-          IsSelected = True
+          IsSelected = False
           Margins.Left = 10.000000000000000000
           Size.Width = 223.000000000000000000
           Size.Height = 49.000000000000000000
@@ -35147,7 +35148,7 @@ object Nominate: TNominate
                   Size.PlatformDefault = False
                   TabOrder = 16
                   TabStop = False
-                  Text = 'Done'
+                  Text = 'POST'
                   TextSettings.Font.Size = 24.000000000000000000
                   TextSettings.Trimming = None
                   OnClick = btnPostClick
@@ -35181,7 +35182,6 @@ object Nominate: TNominate
               HeaderAppearanceClassName = 'TListHeaderObjects'
               FooterAppearanceClassName = 'TListHeaderObjects'
               OnUpdateObjects = lbxNominateUpdateObjects
-              ItemIndex = 0
               Align = Client
               ClipChildren = False
               Size.Width = 458.000000000000000000
@@ -35191,8 +35191,8 @@ object Nominate: TNominate
               ParentShowHint = False
               ShowHint = False
               OnMouseUp = lbxNominateMouseUp
-              ItemAppearance.ItemHeight = 50
-              ItemAppearance.ItemEditHeight = 50
+              ItemAppearance.ItemHeight = 55
+              ItemAppearance.ItemEditHeight = 55
               ItemAppearance.HeaderHeight = 12
               ItemAppearance.FooterHeight = 12
               ItemAppearanceObjects.ItemObjects.ObjectsCollection = <
@@ -35210,7 +35210,7 @@ object Nominate: TNominate
                   Appearance.PlaceOffset.X = 46.000000000000000000
                 end
                 item
-                  AppearanceObjectName = 'txtEventTitle'
+                  AppearanceObjectName = 'Title'
                   AppearanceClassName = 'TTextObjectAppearance'
                   Appearance.Font.Size = 16.000000000000000000
                   Appearance.Font.StyleExt = {00070000000000000004000000}
@@ -35218,26 +35218,18 @@ object Nominate: TNominate
                   Appearance.TextColor = claWhite
                   Appearance.Width = 329.000000000000000000
                   Appearance.Height = 32.000000000000000000
-                  Appearance.PlaceOffset.X = 102.000000000000000000
+                  Appearance.PlaceOffset.X = 94.000000000000000000
                   Appearance.PlaceOffset.Y = -2.000000000000000000
                 end
                 item
-                  AppearanceObjectName = 'txtEventDetails'
+                  AppearanceObjectName = 'Detail'
                   AppearanceClassName = 'TTextObjectAppearance'
                   Appearance.TextAlign = Leading
                   Appearance.TextColor = claGainsboro
                   Appearance.Width = 329.000000000000000000
                   Appearance.Height = 29.000000000000000000
-                  Appearance.PlaceOffset.X = 102.000000000000000000
+                  Appearance.PlaceOffset.X = 94.000000000000000000
                   Appearance.PlaceOffset.Y = 24.000000000000000000
-                end
-                item
-                  AppearanceObjectName = 'chkbxNominate'
-                  AppearanceClassName = 'TGlyphButtonObjectAppearance'
-                  Appearance.ButtonType = Checkbox
-                  Appearance.Width = 44.000000000000000000
-                  Appearance.Height = 44.000000000000000000
-                  Appearance.Align = Trailing
                 end>
               ItemAppearanceObjects.ItemEditObjects.ObjectsCollection = <
                 item
@@ -35274,14 +35266,6 @@ object Nominate: TNominate
                   Appearance.Height = 20.000000000000000000
                   Appearance.PlaceOffset.X = 102.000000000000000000
                   Appearance.PlaceOffset.Y = 24.000000000000000000
-                end
-                item
-                  AppearanceObjectName = 'chkbxNominate'
-                  AppearanceClassName = 'TGlyphButtonObjectAppearance'
-                  Appearance.ButtonType = Checkbox
-                  Appearance.Width = 44.000000000000000000
-                  Appearance.Height = 44.000000000000000000
-                  Appearance.Align = Trailing
                 end>
               ItemAppearanceObjects.HeaderObjects.Text.Visible = False
               ItemAppearanceObjects.FooterObjects.Text.Visible = False
@@ -35320,13 +35304,13 @@ object Nominate: TNominate
               TabOrder = 2
               object btnConfirmNominated: TButton
                 Align = Center
-                Scale.X = 1.500000000000000000
-                Scale.Y = 1.500000000000000000
+                StyledSettings = [Family, Style, FontColor]
                 Size.Width = 147.000000000000000000
                 Size.Height = 37.000000000000000000
                 Size.PlatformDefault = False
                 TabOrder = 0
                 Text = 'OK'
+                TextSettings.Font.Size = 24.000000000000000000
                 TextSettings.Trimming = None
                 OnClick = btnConfirmNominatedClick
               end
@@ -36374,52 +36358,6 @@ object Nominate: TNominate
     Left = 136
     Top = 416
   end
-  object BindingsList1: TBindingsList
-    Methods = <>
-    OutputConverters = <>
-    Left = 140
-    Top = 133
-    object LinkListControlToField1: TLinkListControlToField
-      Category = 'Quick Bindings'
-      DataSource = bsSession
-      FieldName = 'SessionDetailStr'
-      Control = cmbSessionList
-      FillExpressions = <>
-      FillHeaderExpressions = <>
-      FillBreakGroups = <>
-    end
-    object LinkListControlToField3: TLinkListControlToField
-      Category = 'Quick Bindings'
-      DataSource = bsSwimClub
-      FieldName = 'Caption'
-      Control = cmbSwimClubList
-      FillExpressions = <>
-      FillHeaderExpressions = <>
-      FillBreakGroups = <>
-    end
-    object LinkListControlToField2: TLinkListControlToField
-      Category = 'Quick Bindings'
-      DataSource = bsEvent
-      Control = lbxNominate
-      FillExpressions = <
-        item
-          SourceMemberName = 'ListTextStr'
-          ControlMemberName = 'txtEventTitle'
-        end
-        item
-          SourceMemberName = 'ListDetailStr'
-          ControlMemberName = 'txtEventDetails'
-        end>
-      FillHeaderExpressions = <>
-      FillBreakGroups = <>
-    end
-  end
-  object bsEvent: TBindSourceDB
-    DataSet = SCM.qryEvent
-    ScopeMappings = <>
-    Left = 136
-    Top = 368
-  end
   object bsSwimClub: TBindSourceDB
     DataSet = SCM.tblSwimClub
     ScopeMappings = <>
@@ -36810,5 +36748,51 @@ object Nominate: TNominate
       end>
     Left = 40
     Top = 312
+  end
+  object BindingsList1: TBindingsList
+    Methods = <>
+    OutputConverters = <>
+    Left = 260
+    Top = 173
+    object LinkListControlToField1: TLinkListControlToField
+      Category = 'Quick Bindings'
+      DataSource = bsSwimClub
+      FieldName = 'Caption'
+      Control = cmbSwimClubList
+      FillExpressions = <>
+      FillHeaderExpressions = <>
+      FillBreakGroups = <>
+    end
+    object LinkListControlToField2: TLinkListControlToField
+      Category = 'Quick Bindings'
+      DataSource = bsSession
+      FieldName = 'SessionDetailStr'
+      Control = cmbSessionList
+      FillExpressions = <>
+      FillHeaderExpressions = <>
+      FillBreakGroups = <>
+    end
+    object LinkListControlToField3: TLinkListControlToField
+      Category = 'Quick Bindings'
+      DataSource = bsEvent
+      Control = lbxNominate
+      FillExpressions = <
+        item
+          SourceMemberName = 'Title'
+          ControlMemberName = 'Title'
+        end
+        item
+          SourceMemberName = 'Detail'
+          ControlMemberName = 'Detail'
+        end>
+      FillHeaderExpressions = <>
+      FillBreakGroups = <>
+    end
+  end
+  object bsEvent: TBindSourceDB
+    DataSet = SCM.qryEvent
+    ScopeMappings = <>
+    Left = 456
+    Top = 336
   end
 end

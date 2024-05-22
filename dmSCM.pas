@@ -45,6 +45,38 @@ type
     tblSwimClubSwimClubID: TFDAutoIncField;
     tblSwimClubWebSite: TWideStringField;
     qrySessionNominations: TFDQuery;
+    qryEventEventID: TFDAutoIncField;
+    qryEventEventNum: TIntegerField;
+    qryEventNomineeCount: TIntegerField;
+    qryEventEntrantCount: TIntegerField;
+    qryEventSessionID: TIntegerField;
+    qryEventStrokeID: TIntegerField;
+    qryEventDistanceID: TIntegerField;
+    qryEventEventStatusID: TIntegerField;
+    qryMemberMemberID: TFDAutoIncField;
+    qryMemberMembershipNum: TIntegerField;
+    qryMemberMembershipStr: TWideStringField;
+    qryMemberFirstName: TWideStringField;
+    qryMemberLastName: TWideStringField;
+    qryMemberDOB: TSQLTimeStampField;
+    qryMemberIsArchived: TBooleanField;
+    qryMemberIsActive: TBooleanField;
+    qryMemberIsSwimmer: TBooleanField;
+    qryMemberEmail: TWideStringField;
+    qryMemberEnableEmailOut: TBooleanField;
+    qryMemberGenderID: TIntegerField;
+    qryMemberSwimClubID: TIntegerField;
+    qryMemberFName: TWideStringField;
+    qrySessionSessionID: TFDAutoIncField;
+    qrySessionSessionStart: TSQLTimeStampField;
+    qrySessionSwimClubID: TIntegerField;
+    qrySessionSessionStatusID: TIntegerField;
+    qrySessionSessionStatusStr: TStringField;
+    qrySessionCaption: TWideStringField;
+    qrySessionSessionStartStr: TWideStringField;
+    qrySessionSessionDetailStr: TWideStringField;
+    qryEventTitle: TWideStringField;
+    qryEventDetail: TWideStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
   const
@@ -72,6 +104,8 @@ type
       : Boolean;
     function IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
     function LocateEventID(EventID: Integer): Boolean;
+    function LocateSwimClubID(SwimClubID: Integer): Boolean;
+    function LocateSessionID(SessionID: Integer): Boolean;
     property IsActive: Boolean read FIsActive;
   end;
 
@@ -281,16 +315,17 @@ begin
   end;
 end;
 
-function TSCM.IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
+function TSCM.IsValidMembershipNum(MemberShipNumber: integer): Boolean;
 var
-  rtn: Integer;
+  rtn: integer;
 begin
   result := false;
   if scmConnection.Connected then
   begin
-    rtn := scmConnection.ExecSQLScalar
-      ('USE SwimClubMeet; SET NOCOUNT ON; Select MembershipNum from Member where MembershipNum = :Num',
-      [MemberShipNumber]);
+    rtn := scmConnection.ExecSQLScalar('USE SwimClubMeet; SET NOCOUNT ON; ' +
+      'SELECT MembershipNum FROM Member WHERE (MembershipNum = :Num) AND ' +
+      '(IsActive=1) AND (IsSwimmer=1) AND (IsArchived=0)', [MemberShipNumber]);
+
     if rtn > 0 then
       result := True;
   end;
@@ -315,6 +350,46 @@ begin
   end;
   result := LocateSuccess;
 
+end;
+
+function TSCM.LocateSessionID(SessionID: Integer): Boolean;
+var
+  LocateSuccess: Boolean;
+  SearchOptions: TLocateOptions;
+
+begin
+  result := false;
+  if not qrySession.Active then
+    exit;
+  SearchOptions := [loPartialKey];
+  try
+    LocateSuccess := qrySession.Locate('SessionID', VarArrayOf([SessionID]),
+      SearchOptions);
+  except
+    on E: Exception do
+      LocateSuccess := false
+  end;
+  result := LocateSuccess;
+end;
+
+function TSCM.LocateSwimClubID(SwimClubID: Integer): Boolean;
+var
+  LocateSuccess: Boolean;
+  SearchOptions: TLocateOptions;
+
+begin
+  result := false;
+  if not tblSwimClub.Active then
+    exit;
+  SearchOptions := [loPartialKey];
+  try
+    LocateSuccess := tblSwimClub.Locate('SwimClubID', VarArrayOf([SwimClubID]),
+      SearchOptions);
+  except
+    on E: Exception do
+      LocateSuccess := false
+  end;
+  result := LocateSuccess;
 end;
 
 function TSCM.UpdateSessionNominations(SessionID, MemberID: Integer): Boolean;
