@@ -1,5 +1,5 @@
 unit frmNominate;
-
+//
 interface
 
 uses
@@ -10,8 +10,9 @@ uses
   FMX.TabControl, System.ImageList, FMX.ImgList, dmSCM, System.Actions,
   FMX.ActnList, System.Rtti, System.Bindings.Outputs, FMX.Bind.Editors,
   Data.Bind.EngExt, FMX.Bind.DBEngExt, Data.Bind.Components, Data.Bind.DBScope,
-  System.Contnrs, scmMemberNom, ProgramSetting, FMX.ListView.Types,
-  FMX.ListView.Appearances, FMX.ListView.Adapters.Base, FMX.ListView;
+  System.Contnrs, ProgramSetting, FMX.ListView.Types,
+  FMX.ListView.Appearances, FMX.ListView.Adapters.Base, FMX.ListView,
+  FMX.Grid.Style, Fmx.Bind.Grid, Data.Bind.Grid, FMX.ScrollBox, FMX.Grid;
 
 type
 
@@ -32,7 +33,6 @@ type
     actnToggleMode: TAction;
     AniIndicator1: TAniIndicator;
     BindingsList1: TBindingsList;
-    bsEvent: TBindSourceDB;
     bsSession: TBindSourceDB;
     bsSwimClub: TBindSourceDB;
     btn00: TButton;
@@ -97,7 +97,6 @@ type
     lblStatusBar: TLabel;
     lbxNominate: TListView;
     LinkListControlToField1: TLinkListControlToField;
-    LinkListControlToField2: TLinkListControlToField;
     Rectangle1: TRectangle;
     ScaledLayout1: TScaledLayout;
     SizeGrip1: TSizeGrip;
@@ -112,7 +111,9 @@ type
     txtMemberFullName: TText;
     txtNumber: TText;
     txtPostToCompleteMsg: TLabel;
+    bsEvent: TBindSourceDB;
     LinkListControlToField3: TLinkListControlToField;
+    LinkListControlToField2: TLinkListControlToField;
     procedure actnConnectExecute(Sender: TObject);
     procedure actnConnectUpdate(Sender: TObject);
     procedure actnDisconnectExecute(Sender: TObject);
@@ -147,7 +148,11 @@ type
     fLoginTimeOut: Integer;
     fShowConfirmationDlg: Boolean;
     isMouseUpState: Boolean;
+    // THREADS
     procedure ConnectOnTerminate(Sender: TObject);
+    procedure SwimClubListOnChangeTerminate(Sender: TObject);
+    procedure SessionListOnChangeTerminate(Sender: TObject);
+
     function GetSCMVerInfo(): string;
     procedure LoadFromSettings; // JSON Program Settings
     procedure LoadSettings; // JSON Program Settings
@@ -158,8 +163,9 @@ type
     procedure Refresh_ALL;
     procedure SaveToSettings; // JSON Program Settings
     procedure Status_ConnectionDescription;
-    procedure Update_ListOfNominatedEvents;
+    procedure BuildMembersSessionNominations;
     procedure Update_PromptText;
+    procedure Update_SessionVisibility;
   end;
 
 var
@@ -243,6 +249,13 @@ begin
     SCM.DeActivateTable;
     SCM.scmConnection.Connected := false;
     lblStatusBar.Text := 'No connection.';
+
+    // D I S C O N N E C T  TBindSourceDB
+    // Remove display of cached items on a disconnected bindings.
+//    bsSwimClub.DataSet := nil;
+//    bsSession.DataSet := nil;
+//    bsEvent.DataSet := nil;
+
   end;
   // Hides..unhides visibility of icons in tabLoginSession
   AniIndicator1.Visible := false;
@@ -295,6 +308,12 @@ procedure TNominate.actnToggleModeExecute(Sender: TObject);
 begin
   if TabControl1.TabIndex = 0 then
   begin
+    // the swimclub must have sessions
+    if SCM.qrySession.IsEmpty then
+    begin
+      lblStatusBar.Text := 'No sessions in this swimclub.';
+      exit;
+    end;
     // A session must be selected.
     if cmbSessionList.ItemIndex = -1 then
     begin
@@ -314,11 +333,12 @@ begin
       exit;
     end;
     // the session must have events
-    if bsEvent.DataSet.IsEmpty then
+    if SCM.qryEvent.IsEmpty then
     begin
       lblStatusBar.Text := 'No events in this session.';
       exit;
     end;
+
     TabControl1.Next(TTabTransition.Slide);
   end
   else
@@ -366,8 +386,10 @@ begin
     exit;
   if not SCM.IsActive then
     exit;
+
   if bsEvent.DataSet.IsEmpty then
   begin
+    bsEvent.DataSource.Enabled := false;
     lblStatusBar.Text := 'No events found in this session!';
     exit;
   end;
@@ -375,30 +397,49 @@ begin
   // extract integer.
   MembershipNum := StrToIntDef(txtNumber.Text, 0);
   if (MembershipNum = 0) then
+  begin
+    bsEvent.DataSource.Enabled := false;
+    lblStatusBar.Text := 'Bad membership number.';
     exit;
+  end;
 
   // Does the membership number exist?
   // Get the member's ID from membership number
   if not SCM.IsValidMembershipNum(MembershipNum) then
   begin
+    bsEvent.DataSource.Enabled := false;
 {$IFDEF MSWINDOWS}
     MessageBeep(MB_ICONERROR);
 {$ENDIF}
     lblStatusBar.Text :=
       'Member''s ID not found or not a swimmer or not active or is archived.';
     fCurrMemberID := 0;
+    exit;
   end;
 
   fCurrMemberID := SCM.GetMemberID(MembershipNum);
-  if (fCurrMemberID > 0) then
+
+  if (fCurrMemberID = 0) then
   begin
-    txtMemberFullName.Text := SCM.GetMemberFName(fCurrMemberID);
-    // BUILD THE LIST OF NOMINATIONS
-    // The current member has been found. Re-build the
-    // list collection of integers holding nominated events for current member.
-    Update_ListOfNominatedEvents;
-    TabControl1.Next;
+    bsEvent.DataSource.Enabled := false;
+    lblStatusBar.Text := 'Lookup of member''s ID failed.';
+    exit;
   end;
+
+
+  txtMemberFullName.Text := SCM.GetMemberFName(fCurrMemberID);
+  // BUILD LIST OF NOMINATED EVENTS.
+  // Build the list of nominated events for current member.
+  BuildMembersSessionNominations;
+
+
+  // P R E P A R E   T B i n d S o u r c e D B  .
+  // ---------------------------------------------
+  bsEvent.DataSource.Enabled := false;
+  SCM.qryEvent.First;
+  bsEvent.DataSource.Enabled := true;
+
+  TabControl1.Next;
 
 end;
 
@@ -434,39 +475,45 @@ end;
 
 procedure TNominate.chkbSessionVisibilityChange(Sender: TObject);
 begin
-  if (Assigned(SCM) and SCM.scmConnection.Connected) then
-  begin
-//    FILTER: SessionStatusID = 1
-    bsSession.DataSet.DisableControls;
-    if chkbSessionVisibility.IsChecked then
-      bsSession.DataSet.Filtered := true
-    else
-      bsSession.DataSet.Filtered := false;
-    bsSession.DataSet.EnableControls;
-  end;
+  Update_SessionVisibility;
 end;
 
 procedure TNominate.cmbSessionListChange(Sender: TObject);
+var
+  myThread: TThread;
 begin
   lblStatusBar.Text := '';
-  if (Assigned(SCM) and SCM.IsActive) then
-  begin
-    Refresh_Events;
-  end;
+  myThread := TThread.CreateAnonymousThread(
+    procedure
+    begin
+      // OnChange event occurs on or at SCM.qryEvent.BeforeScroll
+      // AND NOT at SCM.qryEvent.AfterScroll.
+      // By using a thread it's assured that qrySwimClub has scrolled.
+      // SwimClubListOnChangeTerminate tests if qrySwimClub has records
+      // before enabling DataSource.
+      bsEvent.DataSource.Enabled := false;
+    end);
+  myThread.OnTerminate := SessionListOnChangeTerminate;
+  myThread.Start;
 end;
 
 procedure TNominate.cmbSwimClubListChange(Sender: TObject);
+var
+  myThread: TThread;
 begin
-//  if Assigned(SCM) and SCM.scmConnection.Connected then
-//  begin
-//  if bsSession.DataSet.Active then
-//  begin
-//    bsSession.DataSet.Refresh;
-//    bsSession.EmptyDataLink;
-//    bsSession.ResetNeeded;
-//  end;
-//  end;
-//  Refresh_Session;
+  lblStatusBar.Text := '';
+  myThread := TThread.CreateAnonymousThread(
+    procedure
+    begin
+      // OnChange event occurs on or at SCM.qryEvent.BeforeScroll
+      // AND NOT at SCM.qryEvent.AfterScroll.
+      // By using a thread it's assured that qrySwimClub has scrolled.
+      // SwimClubListOnChangeTerminate tests if qrySwimClub has records
+      // before enabling DataSource.
+      bsSession.DataSource.Enabled := false;
+    end);
+  myThread.OnTerminate := SwimClubListOnChangeTerminate;
+  myThread.Start;
 end;
 
 procedure TNominate.ConnectOnTerminate(Sender: TObject);
@@ -488,16 +535,26 @@ begin
   if (SCM.scmConnection.Connected) then
   begin
     SCM.ActivateTable;
+
     // ALL TABLES SUCCESSFULLY MADE ACTIVE ...
     if (SCM.IsActive = true) then
     begin
-      // Set the visibility of closed sessions.
-      bsSession.DataSet.DisableControls;
-      if chkbSessionVisibility.IsChecked then
-        bsSession.DataSet.Filtered := true
+      // filtering state for session visibility determined by checkbox
+      Update_SessionVisibility;
+
+      // Safest way to initialise 'stupid' TBindSourceDB links.
+      if SCM.tblSwimClub.IsEmpty then
+        bsSwimClub.DataSource.Enabled := false
       else
-        bsSession.DataSet.Filtered := false;
-      bsSession.DataSet.EnableControls;
+        bsSwimClub.DataSource.Enabled := true;
+      if SCM.qrySession.IsEmpty then
+        bsSession.DataSource.Enabled := false
+      else
+        bsSession.DataSource.Enabled := true;
+      if SCM.qryEvent.IsEmpty then
+        bsEvent.DataSource.Enabled := false
+      else
+        bsEvent.DataSource.Enabled := true;
     end;
   end;
 
@@ -540,13 +597,15 @@ begin
   txtEnterNumberMsg.Visible := false;
   txtPostToCompleteMsg.Visible := false;
 
+  // DISABLE ALL DataSource links - wit: shows empty TComboBox
+  bsSwimClub.DataSource.Enabled := false;
+  bsSession.DataSource.Enabled := false;
+  bsEvent.DataSource.Enabled := false;
+
+
   // A Class that uses JSON to read and write application configuration
   if Settings = nil then
     Settings := TPrgSetting.Create;
-
-  cmbSessionList.Items.Clear;
-  cmbSwimClubList.Items.Clear;
-  lbxNominate.Items.Clear;
 
   // C R E A T E   T H E   D A T A M O D U L E .
   if NOT Assigned(SCM) then
@@ -570,6 +629,10 @@ begin
 
   // T A B  V I S I B I L I T Y .
   TabControl1.TabPosition := TTabPosition.None;
+
+  // DEFAULT filter = only open sessions.
+  SCM.qrySession.Filter := 'SessionStatusID = 1';
+
 end;
 
 procedure TNominate.FormDestroy(Sender: TObject);
@@ -879,18 +942,58 @@ begin
   Settings.SaveToFile();
 end;
 
+procedure TNominate.SessionListOnChangeTerminate(Sender: TObject);
+begin
+  if Assigned(SCM) and SCM.IsActive then
+  begin
+    if SCM.qryEvent.Active then
+    begin
+      if SCM.qryEvent.IsEmpty then
+      begin
+        bsEvent.DataSource.Enabled := false; // ASSERT.
+        lblStatusBar.Text := 'No events found in this session.';
+      end
+      else
+        bsEvent.DataSource.Enabled := true;
+    end;
+  end;
+end;
+
 procedure TNominate.Status_ConnectionDescription;
+var
+s: string;
 begin
   if Assigned(SCM) and SCM.IsActive then
   begin
     // STATUS BAR CAPTION.
     lblStatusBar.Text := 'Connected to SwimClubMeet. ';
     lblStatusBar.Text := lblStatusBar.Text + GetSCMVerInfo;
-    lblStatusBar.Text := lblStatusBar.Text + sLineBreak +
-      bsSwimClub.DataSet.FieldByName('Caption').AsString;
+
+    if Assigned(bsSwimClub.DataSet) then
+      s:= bsSwimClub.DataSet.FieldByName('Caption').AsString
+    else s:='';
+    lblStatusBar.Text := lblStatusBar.Text + sLineBreak + s;
+
   end
   else
     lblStatusBar.Text := 'NOT CONNECTED. ';
+end;
+
+procedure TNominate.SwimClubListOnChangeTerminate(Sender: TObject);
+begin
+  if Assigned(SCM) and SCM.IsActive then
+  begin
+    if SCM.qrySession.Active then
+    begin
+      if SCM.qrySession.IsEmpty then
+      begin
+        bsSession.DataSource.Enabled := false; // ASSERT.
+        lblStatusBar.Text := 'No sessions found in this swimclub.';
+      end
+      else
+        bsSession.DataSource.Enabled := true;
+    end;
+  end;
 end;
 
 procedure TNominate.TabControl1Change(Sender: TObject);
@@ -921,7 +1024,7 @@ begin
   end;
 end;
 
-procedure TNominate.Update_ListOfNominatedEvents;
+procedure TNominate.BuildMembersSessionNominations;
 var
 SessionID: integer;
 success: boolean;
@@ -930,7 +1033,7 @@ begin
   FListOfNominatedEvents.Clear;
   if (fCurrMemberID = 0)  then exit;
   SessionID := bsSession.DataSet.FieldByName('SessionID').AsInteger;
-  success := SCM.UpdateSessionNominations(SessionID, fCurrMemberID);
+  success := SCM.GetMembersSessionNominations(SessionID, fCurrMemberID);
   if success then
   begin
     While not SCM.qrySessionNominations.Eof do
@@ -959,6 +1062,20 @@ begin
   end;
 end;
 
+
+procedure TNominate.Update_SessionVisibility;
+begin
+  if (Assigned(SCM) and SCM.scmConnection.Connected) then
+  begin
+    // FILTER set on creation: 'SessionStatusID = 1'
+    bsSession.DataSet.DisableControls;
+    if chkbSessionVisibility.IsChecked then
+      bsSession.DataSet.Filtered := true
+    else
+      bsSession.DataSet.Filtered := false;
+    bsSession.DataSet.EnableControls;
+  end;
+end;
 
 { TDefaultFont }
 

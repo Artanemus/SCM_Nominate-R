@@ -5,7 +5,6 @@ uses
   FMX.Forms,
   frmNominate in 'frmNominate.pas' {Nominate},
   dmSCM in 'dmSCM.pas' {SCM: TDataModule},
-  scmMemberNom in 'scmMemberNom.pas',
   SCMUtility in '..\SCM_SHARED\SCMUtility.pas',
   SCMSimpleConnect in '..\SCM_SHARED\SCMSimpleConnect.pas',
   exeinfo in '..\SCM_SHARED\exeinfo.pas',

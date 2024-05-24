@@ -292,7 +292,6 @@
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="scmMemberNom.pas"/>
         <DCCReference Include="..\SCM_SHARED\SCMUtility.pas"/>
         <DCCReference Include="..\SCM_SHARED\SCMSimpleConnect.pas"/>
         <DCCReference Include="..\SCM_SHARED\exeinfo.pas"/>

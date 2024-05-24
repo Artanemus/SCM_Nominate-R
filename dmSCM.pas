@@ -8,7 +8,8 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLDef, FireDAC.FMXUI.Wait, FireDAC.Stan.Param, FireDAC.DatS,
   FireDAC.DApt.Intf, FireDAC.DApt, Data.DB, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, System.IniFiles, System.IOUtils;
+  FireDAC.Comp.DataSet, System.IniFiles, System.IOUtils, Data.Bind.Components,
+  Data.Bind.DBScope;
 
 type
   TSCM = class(TDataModule)
@@ -25,7 +26,6 @@ type
     qryIsEntrant: TFDQuery;
     qryIsNominated: TFDQuery;
     qryIsQualified: TFDQuery;
-    qryIsQualified_ORG: TFDQuery;
     qryMember: TFDQuery;
     qrySCMSystem: TFDQuery;
     qrySession: TFDQuery;
@@ -47,8 +47,6 @@ type
     qrySessionNominations: TFDQuery;
     qryEventEventID: TFDAutoIncField;
     qryEventEventNum: TIntegerField;
-    qryEventNomineeCount: TIntegerField;
-    qryEventEntrantCount: TIntegerField;
     qryEventSessionID: TIntegerField;
     qryEventStrokeID: TIntegerField;
     qryEventDistanceID: TIntegerField;
@@ -83,23 +81,23 @@ type
     SCMCONFIGFILENAME = 'SCMConfig.ini';
   var
     fDBModel, fDBVersion, fDBMajor, fDBMinor: integer;
-    { Private declarations }
     FIsActive: Boolean;
   public
     procedure ActivateTable();
-    // SQL command .
+    // SQL commands .
     procedure commandCreateNomination(MemberID, EventID: Integer);
     procedure commandDeleteEntrant(EntrantID: Integer);
     procedure commandDeleteNomination(MemberID, EventID: Integer);
     procedure commandDeleteSplit(EntrantID: Integer);
     procedure DeActivateTable();
+    procedure Refresh_ALL;
+    procedure Refresh_Events;
     function GetDBVerInfo: string;
     function GetMemberFName(MemberID: Integer): String;
     function GetMemberID(MemberShipNumber: Integer): Integer;
     function IsMemberEntrant(MemberID, EventID: Integer): Integer;
-    { Public declarations }
     function IsMemberNominated(MemberID, EventID: Integer): Boolean;
-    function UpdateSessionNominations(SessionID, MemberID: Integer): Boolean;
+    function GetMembersSessionNominations(SessionID, MemberID: Integer): Boolean;
     function IsMemberQualified(MemberID, DistanceID, StrokeID: Integer)
       : Boolean;
     function IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
@@ -181,9 +179,9 @@ end;
 procedure TSCM.DeActivateTable;
 begin
   FIsActive := false;
-  qryEvent.Close;
-  qrySession.Close;
-  tblSwimClub.Close;
+  if qryEvent.Active then qryEvent.Close;
+  if qrySession.Active then qrySession.Close;
+  if tblSwimClub.Active then tblSwimClub.Close;
 end;
 
 function TSCM.GetDBVerInfo: string;
@@ -392,7 +390,58 @@ begin
   result := LocateSuccess;
 end;
 
-function TSCM.UpdateSessionNominations(SessionID, MemberID: Integer): Boolean;
+procedure TSCM.Refresh_ALL;
+var
+EventID, SessionID, SwimClubID: integer;
+begin
+  if IsActive then
+  begin
+    qryEvent.DisableControls;
+    qrySession.DisableControls;
+    tblSwimClub.DisableControls;
+    // store the current database record identities
+    EventID := qryEvent.FieldByName('EventID').AsInteger;
+    SessionID := qrySession.FieldByName('SessionID').AsInteger;
+    SwimClubID := tblSwimClub.FieldByName('SwimClubID').AsInteger;
+    qryEvent.Close;
+    qrySession.Close;
+    tblSwimClub.Close;
+
+    tblSwimClub.Open;
+    if tblSwimClub.Active then
+      LocateSwimClubID(SwimClubID);
+
+    qrySession.Open;
+    if qrySession.Active then
+      LocateSessionID(SessionID);
+
+    qryEvent.Open;
+    if qryEvent.Active then
+      LocateEventID(EventID);
+
+    tblSwimClub.EnableControls;
+    qrySession.EnableControls;
+    qryEvent.EnableControls;
+  end;
+end;
+
+procedure TSCM.Refresh_Events;
+var
+EventID: integer;
+begin
+  if IsActive then
+  begin
+    EventID := qryEvent.FieldByName('EventID').AsInteger;
+    qryEvent.Close;
+    qryEvent.DisableControls;
+    qryEvent.EnableControls;
+    qryEvent.Open;
+    if qryEvent.Active then
+      LocateEventID(EventID);
+  end;
+end;
+
+function TSCM.GetMembersSessionNominations(SessionID, MemberID: Integer): Boolean;
 begin
   result := false;
   if scmConnection.Connected then

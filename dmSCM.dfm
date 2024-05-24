@@ -1,7 +1,7 @@
 object SCM: TSCM
   OnCreate = DataModuleCreate
-  Height = 870
-  Width = 717
+  Height = 634
+  Width = 508
   object scmConnection: TFDConnection
     Params.Strings = (
       'ConnectionDef=MSSQL_SwimClubMeet')
@@ -20,8 +20,8 @@ object SCM: TSCM
     UpdateOptions.UpdateTableName = 'SwimClubMeet..SwimClub'
     UpdateOptions.KeyFields = 'SwimClubID'
     TableName = 'SwimClubMeet..SwimClub'
-    Left = 48
-    Top = 120
+    Left = 64
+    Top = 88
     object tblSwimClubSwimClubID: TFDAutoIncField
       FieldName = 'SwimClubID'
       Origin = 'SwimClubID'
@@ -75,23 +75,23 @@ object SCM: TSCM
   end
   object dsSwimClub: TDataSource
     DataSet = tblSwimClub
-    Left = 112
-    Top = 120
+    Left = 136
+    Top = 88
   end
   object dsSession: TDataSource
     DataSet = qrySession
-    Left = 112
-    Top = 264
+    Left = 136
+    Top = 216
   end
   object dsEvent: TDataSource
     DataSet = qryEvent
-    Left = 104
-    Top = 336
+    Left = 136
+    Top = 280
   end
   object dsMember: TDataSource
     DataSet = qryMember
-    Left = 104
-    Top = 184
+    Left = 136
+    Top = 152
   end
   object qrySession: TFDQuery
     ActiveStoredUsage = [auDesignTime]
@@ -143,8 +143,8 @@ object SCM: TSCM
       'ORDER BY Session.SessionStart DESC'
       ''
       '')
-    Left = 48
-    Top = 264
+    Left = 64
+    Top = 216
     object qrySessionSessionID: TFDAutoIncField
       FieldName = 'SessionID'
       Origin = 'SessionID'
@@ -196,13 +196,17 @@ object SCM: TSCM
     MasterFields = 'SessionID'
     DetailFields = 'SessionID'
     Connection = scmConnection
+    UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
+    UpdateOptions.EnableDelete = False
+    UpdateOptions.EnableInsert = False
+    UpdateOptions.EnableUpdate = False
     UpdateOptions.UpdateTableName = 'SwimClubMeet..Event'
     UpdateOptions.KeyFields = 'EventID'
     SQL.Strings = (
       'SELECT Event.EventID'
       '    , Event.EventNum'
-      '    , qryNominees.NomineeCount'
-      '    , qryEntrants.EntrantCount'
+      '--    , qryNominees.NomineeCount'
+      '--    , qryEntrants.EntrantCount'
       '    , Event.SessionID'
       '    , Event.StrokeID'
       '    , Event.DistanceID'
@@ -224,6 +228,8 @@ object SCM: TSCM
       '    ON Distance.DistanceID = Event.DistanceID'
       'LEFT OUTER JOIN EventStatus'
       '    ON EventStatus.EventStatusID = Event.EventStatusID'
+      '    '
+      '    /*'
       'LEFT JOIN ('
       '    SELECT Count(Nominee.EventID) AS NomineeCount'
       '        , EventID'
@@ -241,9 +247,10 @@ object SCM: TSCM
       '    GROUP BY HeatIndividual.EventID'
       '    ) qryEntrants'
       '    ON qryEntrants.EventID = Event.EventID'
+      '*/'
       'ORDER BY Event.EventNum;')
-    Left = 40
-    Top = 336
+    Left = 64
+    Top = 280
     object qryEventEventID: TFDAutoIncField
       FieldName = 'EventID'
       Origin = 'EventID'
@@ -252,16 +259,6 @@ object SCM: TSCM
     object qryEventEventNum: TIntegerField
       FieldName = 'EventNum'
       Origin = 'EventNum'
-    end
-    object qryEventNomineeCount: TIntegerField
-      FieldName = 'NomineeCount'
-      Origin = 'NomineeCount'
-      ReadOnly = True
-    end
-    object qryEventEntrantCount: TIntegerField
-      FieldName = 'EntrantCount'
-      Origin = 'EntrantCount'
-      ReadOnly = True
     end
     object qryEventSessionID: TIntegerField
       FieldName = 'SessionID'
@@ -329,8 +326,8 @@ object SCM: TSCM
       'FROM Member '
       'WHERE MemberID = @MemberID'
       'ORDER BY [LastName];')
-    Left = 48
-    Top = 184
+    Left = 64
+    Top = 152
     ParamData = <
       item
         Name = 'MEMBERID'
@@ -406,141 +403,6 @@ object SCM: TSCM
       Size = 60
     end
   end
-  object qryIsQualified_ORG: TFDQuery
-    ActiveStoredUsage = [auDesignTime]
-    IndexFieldNames = 'MemberID'
-    Connection = scmConnection
-    FormatOptions.AssignedValues = [fvFmtDisplayTime]
-    FormatOptions.FmtDisplayTime = 'nn:ss.zzz'
-    UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
-    UpdateOptions.EnableDelete = False
-    UpdateOptions.EnableInsert = False
-    UpdateOptions.EnableUpdate = False
-    UpdateOptions.KeyFields = 'MemberID'
-    SQL.Strings = (
-      'USE SwimClubMeet;'
-      ''
-      'DECLARE @SwimClubID AS INT;-- required (NULL returns no records)'
-      
-        'DECLARE @SessionStart AS DATETIME;-- required (sets cut-off rang' +
-        'e, ie. PersonalBest '#39'as of'#39' up to and including the is date.)'
-      
-        'DECLARE @DistanceID AS INT;-- required (the Qualifying distance ' +
-        'to check for qualification)'
-      'DECLARE @StrokeID AS INT;-- required (the swimming stroke)'
-      ''
-      'DECLARE @MemberID AS INT;'
-      ''
-      '-- CALCULATED VARIABLES'
-      
-        'DECLARE @IsShortCourse AS BIT;-- calculated (important - uses Sw' +
-        'imClubID)'
-      
-        'DECLARE @GenderID AS INT;-- calculated (important - qualificatio' +
-        'n table splits MALE and FEMALE)'
-      ''
-      'SET @SessionStart = :SESSIONSTART'
-      'SET @SwimClubID = :SWIMCLUBID;'
-      'SET @MemberID = :MEMBERID;'
-      ''
-      'IF @SessionStart IS NULL'
-      #9'SET @SessionStart = GetDate();'
-      ''
-      'SET @DistanceID = :DISTANCEID;'
-      'SET @StrokeID = :STROKEID;'
-      ''
-      ''
-      '-- as yet - not implemented in current release'
-      '--SET @IsShortCourse = db0.IsPoolShortCourse(@SwimClubID);'
-      ''
-      '-- any thing under 50 meters is a shortcourse'
-      'SET @IsShortCourse = ('
-      #9#9'SELECT CASE '
-      #9#9#9#9'WHEN [SwimClub].[LenOfPool] >= 50'
-      #9#9#9#9#9'THEN 0'
-      #9#9#9#9'ELSE 1'
-      #9#9#9#9'END'
-      #9#9'FROM SwimClub'
-      #9#9'WHERE SwimClubID = @SwimClubID'
-      #9#9');'
-      ''
-      '-- DROP TABLE IF EXISTS'
-      'IF OBJECT_ID('#39'tempdb..#tblMember'#39', '#39'U'#39') IS NOT NULL'
-      #9'DROP TABLE #tblMember;'
-      ''
-      '-- Member data and stroke ... distance'
-      '-- tempory table to join member, PB and stroke/distance'
-      'SELECT @DistanceID AS DistanceID'
-      #9',@StrokeID AS StrokeID'
-      #9',MemberID'
-      #9',GenderID'
-      #9',dbo.PersonalBest(MemberID, ('
-      #9#9#9'SELECT TrialDistID'
-      #9#9#9'FROM Qualify'
-      #9#9#9'WHERE (Qualify.StrokeID = @StrokeID)'
-      #9#9#9#9'AND (Qualify.QualifyDistID = @DistanceID)'
-      #9#9#9#9'AND (Qualify.IsShortCourse = @IsShortCourse)'
-      #9#9#9#9'AND (Qualify.GenderID = Member.GenderID)'
-      #9#9#9'), @StrokeID, @SessionStart) AS TrialTimePB'
-      #9',IsActive'
-      'INTO #tblMember'
-      'FROM Member'
-      ''
-      ''
-      ''
-      ''
-      '-- OUTPUTS MemberID and treu/false if qualified'
-      'SELECT #tblMember.[MemberID]'
-      #9'--'#9',#tblMember.TrialTimePB'
-      #9'--'#9',TrialTime'
-      
-        #9'--,IIF(#tblMember.TrialTimePB <= TrialTime, 1, 0) AS IsQualifie' +
-        'd'
-      'FROM [dbo].Qualify'
-      
-        'INNER JOIN #tblMember ON Qualify.QualifyDistID = #tblMember.Dist' +
-        'anceID'
-      #9'AND Qualify.StrokeID = #tblMember.StrokeID'
-      'WHERE #tblMember.[IsActive] = 1'
-      '        AND #tblMember.MemberID = @MemberID'
-      #9'AND [dbo].Qualify.IsShortCourse = @IsShortCourse'
-      #9'AND Qualify.StrokeID = @StrokeID'
-      #9'AND Qualify.GenderID = #tblMember.GenderID'
-      'AND IIF(#tblMember.TrialTimePB <= TrialTime, 1, 0) = 1')
-    Left = 296
-    Top = 176
-    ParamData = <
-      item
-        Name = 'SESSIONSTART'
-        DataType = ftDateTime
-        ParamType = ptInput
-        Value = Null
-      end
-      item
-        Name = 'SWIMCLUBID'
-        DataType = ftInteger
-        ParamType = ptInput
-        Value = 1
-      end
-      item
-        Name = 'MEMBERID'
-        DataType = ftInteger
-        ParamType = ptInput
-        Value = 6
-      end
-      item
-        Name = 'DISTANCEID'
-        DataType = ftInteger
-        ParamType = ptInput
-        Value = 2
-      end
-      item
-        Name = 'STROKEID'
-        DataType = ftInteger
-        ParamType = ptInput
-        Value = 1
-      end>
-  end
   object qryIsQualified: TFDQuery
     Connection = scmConnection
     UpdateOptions.AssignedValues = [uvEDelete, uvEInsert, uvEUpdate]
@@ -597,7 +459,7 @@ object SCM: TSCM
         'SELECT NomineeID FROM Nominee WHERE MemberID = @MemberID AND Eve' +
         'ntID = @EventID;')
     Left = 296
-    Top = 104
+    Top = 96
     ParamData = <
       item
         Name = 'MEMBERID'
@@ -633,7 +495,7 @@ object SCM: TSCM
         Value = Null
       end>
     Left = 296
-    Top = 328
+    Top = 288
   end
   object cmdDeleteEntrant: TFDCommand
     Connection = scmConnection
@@ -658,7 +520,7 @@ object SCM: TSCM
         Value = Null
       end>
     Left = 296
-    Top = 384
+    Top = 352
   end
   object cmdCreateNomination: TFDCommand
     Connection = scmConnection
@@ -712,7 +574,7 @@ object SCM: TSCM
         Value = Null
       end>
     Left = 296
-    Top = 256
+    Top = 160
   end
   object cmdDeleteNomination: TFDCommand
     Connection = scmConnection
@@ -746,7 +608,7 @@ object SCM: TSCM
         Value = Null
       end>
     Left = 296
-    Top = 440
+    Top = 416
   end
   object qryIsEntrant: TFDQuery
     Connection = scmConnection
@@ -771,7 +633,7 @@ object SCM: TSCM
         'WHERE dbo.Entrant.MemberID = @MemberID AND dbo.HeatIndividual.Ev' +
         'entID = @EventID;')
     Left = 296
-    Top = 504
+    Top = 480
     ParamData = <
       item
         Name = 'MEMBERID'
@@ -793,13 +655,13 @@ object SCM: TSCM
       'USE SwimClubMeet;'
       ''
       'SELECT * FROM SCMSystem WHERE SCMSystemID = 1;')
-    Left = 472
-    Top = 192
+    Left = 296
+    Top = 224
   end
   object dsSCMSystem: TDataSource
     DataSet = qrySCMSystem
-    Left = 560
-    Top = 192
+    Left = 376
+    Top = 224
   end
   object qrySessionNominations: TFDQuery
     Connection = scmConnection
@@ -820,8 +682,8 @@ object SCM: TSCM
         'WHERE Event.SessionID = @SessionID AND Nominee.MemberID = @Membe' +
         'rID'
       'ORDER BY Nominee.EventID;')
-    Left = 496
-    Top = 104
+    Left = 296
+    Top = 544
     ParamData = <
       item
         Name = 'MEMBERID'
