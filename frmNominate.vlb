@@ -297,15 +297,18 @@ Coordinates=1203,339,115,51
 
 [SCM.tblSwimClub]
 Coordinates=448,10,108,285
+Visible=False
 
 [SCM.qrySession]
 Coordinates=10,339,95,195
+Visible=False
 
 [SCM.dsEvent]
 Coordinates=291,857,80,33
 
 [SCM.qryEvent]
 Coordinates=610,1152,84,231
+Visible=False
 
 [SCM.dsSCMSystem]
 Coordinates=476,1,111,33

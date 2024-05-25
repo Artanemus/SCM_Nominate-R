@@ -11,6 +11,7 @@ object Nominate: TNominate
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   DesignerMasterStyle = 0
   object ScaledLayout1: TScaledLayout
     Align = Contents
@@ -35156,6 +35157,7 @@ object Nominate: TNominate
               ItemEditAppearanceClassName = 'TDynamicAppearance'
               HeaderAppearanceClassName = 'TListHeaderObjects'
               FooterAppearanceClassName = 'TListHeaderObjects'
+              OnUpdatingObjects = lbxNominateUpdatingObjects
               OnUpdateObjects = lbxNominateUpdateObjects
               Align = Client
               ClipChildren = False

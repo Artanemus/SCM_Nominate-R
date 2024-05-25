@@ -431,13 +431,13 @@ EventID: integer;
 begin
   if IsActive then
   begin
+    qryEvent.DisableControls;
     EventID := qryEvent.FieldByName('EventID').AsInteger;
     qryEvent.Close;
-    qryEvent.DisableControls;
-    qryEvent.EnableControls;
     qryEvent.Open;
     if qryEvent.Active then
       LocateEventID(EventID);
+    qryEvent.EnableControls;
   end;
 end;
 

@@ -219,7 +219,7 @@ object SCM: TSCM
       '        , '#39' '#39
       '        , Stroke.Caption'
       '        ) AS Title'
-      '    , CONCAT ('#39'- '#39', Event.Caption) AS Detail'
+      '    , Event.Caption AS Detail'
       ''
       'FROM Event'
       'LEFT OUTER JOIN Stroke'

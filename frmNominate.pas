@@ -33,6 +33,7 @@ type
     actnToggleMode: TAction;
     AniIndicator1: TAniIndicator;
     BindingsList1: TBindingsList;
+    bsEvent: TBindSourceDB;
     bsSession: TBindSourceDB;
     bsSwimClub: TBindSourceDB;
     btn00: TButton;
@@ -97,6 +98,8 @@ type
     lblStatusBar: TLabel;
     lbxNominate: TListView;
     LinkListControlToField1: TLinkListControlToField;
+    LinkListControlToField2: TLinkListControlToField;
+    LinkListControlToField3: TLinkListControlToField;
     Rectangle1: TRectangle;
     ScaledLayout1: TScaledLayout;
     SizeGrip1: TSizeGrip;
@@ -111,9 +114,6 @@ type
     txtMemberFullName: TText;
     txtNumber: TText;
     txtPostToCompleteMsg: TLabel;
-    bsEvent: TBindSourceDB;
-    LinkListControlToField3: TLinkListControlToField;
-    LinkListControlToField2: TLinkListControlToField;
     procedure actnConnectExecute(Sender: TObject);
     procedure actnConnectUpdate(Sender: TObject);
     procedure actnDisconnectExecute(Sender: TObject);
@@ -134,12 +134,16 @@ type
     procedure cmbSwimClubListChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: WideChar;
+        Shift: TShiftState);
     procedure lbxNominateItemClickEx(const Sender: TObject; ItemIndex: Integer;
         const LocalClickPos: TPointF; const ItemObject: TListItemDrawable);
     procedure lbxNominateMouseUp(Sender: TObject; Button: TMouseButton; Shift:
         TShiftState; X, Y: Single);
     procedure lbxNominateUpdateObjects(const Sender: TObject; const AItem:
         TListViewItem);
+    procedure lbxNominateUpdatingObjects(const Sender: TObject; const AItem:
+        TListViewItem; var AHandled: Boolean);
     procedure TabControl1Change(Sender: TObject);
   private
     fConnectionCountdown: Integer;
@@ -148,22 +152,17 @@ type
     fLoginTimeOut: Integer;
     fShowConfirmationDlg: Boolean;
     isMouseUpState: Boolean;
-    // THREADS
-    procedure ConnectOnTerminate(Sender: TObject);
-    procedure SwimClubListOnChangeTerminate(Sender: TObject);
-    procedure SessionListOnChangeTerminate(Sender: TObject);
-
+    procedure BuildMembersSessionNominations;
+    procedure ConnectOnTerminate(Sender: TObject); //THREAD.
     function GetSCMVerInfo(): string;
     procedure LoadFromSettings; // JSON Program Settings
     procedure LoadSettings; // JSON Program Settings
     procedure PostNominations;
-    procedure Refresh_Events;
-    procedure Refresh_Session;
-    procedure Refresh_SwimClub;
     procedure Refresh_ALL;
     procedure SaveToSettings; // JSON Program Settings
+    procedure SessionListOnChangeTerminate(Sender: TObject); //THREAD.
     procedure Status_ConnectionDescription;
-    procedure BuildMembersSessionNominations;
+    procedure SwimClubListOnChangeTerminate(Sender: TObject); //THREAD.
     procedure Update_PromptText;
     procedure Update_SessionVisibility;
   end;
@@ -182,7 +181,6 @@ uses
   // needed to show virtual keyboard in windows 10 32/64bit
   // Shellapi,
 {$ENDIF}
-  // FOR scmLoadOptions
   System.IOUtils, FireDAC.Stan.Param, Data.DB, ExeInfo, SCMSimpleConnect,
   SCMUtility;
 
@@ -243,21 +241,12 @@ end;
 
 procedure TNominate.actnDisconnectExecute(Sender: TObject);
 begin
-  // IF DATA-MODULE EXISTS ... break the current connection.
   if Assigned(SCM) then
   begin
     SCM.DeActivateTable;
     SCM.scmConnection.Connected := false;
     lblStatusBar.Text := 'No connection.';
-
-    // D I S C O N N E C T  TBindSourceDB
-    // Remove display of cached items on a disconnected bindings.
-//    bsSwimClub.DataSet := nil;
-//    bsSession.DataSet := nil;
-//    bsEvent.DataSet := nil;
-
   end;
-  // Hides..unhides visibility of icons in tabLoginSession
   AniIndicator1.Visible := false;
   lblAniIndicatorStatus.Visible := false;
   AniIndicator1.Enabled := false;
@@ -285,7 +274,7 @@ end;
 
 procedure TNominate.actnRefreshExecute(Sender: TObject);
 begin
-  Refresh_ALL;
+    Refresh_ALL;
 end;
 
 procedure TNominate.actnRefreshUpdate(Sender: TObject);
@@ -373,8 +362,7 @@ procedure TNominate.btnConfirmNominatedClick(Sender: TObject);
 begin
   txtNumber.Text := '';
   fCurrMemberID := 0;
-  // switch to: Enter membership number
-  TabControl1.GotoVisibleTab(1);
+  TabControl1.GotoVisibleTab(1); // switch to: Enter membership number
 end;
 
 procedure TNominate.btnEnterClick(Sender: TObject);
@@ -382,14 +370,19 @@ var
   MembershipNum: Integer;
 begin
   lblStatusBar.Text := '';
+
   if not Assigned(SCM) then
     exit;
   if not SCM.IsActive then
     exit;
 
+  // ---------------------------------------------------------------
+  // D I S C O N N E C T   B I N D S O U R C E   F R O M   D A T A .
+  // ---------------------------------------------------------------
+  bsEvent.DataSource.Enabled := false;
+
   if bsEvent.DataSet.IsEmpty then
   begin
-    bsEvent.DataSource.Enabled := false;
     lblStatusBar.Text := 'No events found in this session!';
     exit;
   end;
@@ -398,7 +391,6 @@ begin
   MembershipNum := StrToIntDef(txtNumber.Text, 0);
   if (MembershipNum = 0) then
   begin
-    bsEvent.DataSource.Enabled := false;
     lblStatusBar.Text := 'Bad membership number.';
     exit;
   end;
@@ -407,7 +399,6 @@ begin
   // Get the member's ID from membership number
   if not SCM.IsValidMembershipNum(MembershipNum) then
   begin
-    bsEvent.DataSource.Enabled := false;
 {$IFDEF MSWINDOWS}
     MessageBeep(MB_ICONERROR);
 {$ENDIF}
@@ -418,29 +409,23 @@ begin
   end;
 
   fCurrMemberID := SCM.GetMemberID(MembershipNum);
-
   if (fCurrMemberID = 0) then
   begin
-    bsEvent.DataSource.Enabled := false;
     lblStatusBar.Text := 'Lookup of member''s ID failed.';
     exit;
   end;
 
-
+  // the member's name that appears at top of Nominate tab-sheet
   txtMemberFullName.Text := SCM.GetMemberFName(fCurrMemberID);
   // BUILD LIST OF NOMINATED EVENTS.
   // Build the list of nominated events for current member.
   BuildMembersSessionNominations;
-
-
-  // P R E P A R E   T B i n d S o u r c e D B  .
-  // ---------------------------------------------
-  bsEvent.DataSource.Enabled := false;
   SCM.qryEvent.First;
+  // ---------------------------------------------------------------
+  // R E - C O N N E C T   B I N D S O U R C E   F R O M   D A T A .
+  // ---------------------------------------------------------------
   bsEvent.DataSource.Enabled := true;
-
-  TabControl1.Next;
-
+  TabControl1.Next;  // move to Nominate tab-sheet
 end;
 
 procedure TNominate.btnNumClick(Sender: TObject);
@@ -464,6 +449,26 @@ begin
     txtNumber.Text := '';
     fCurrMemberID := 0;
     TabControl1.GoToVisibleTab(1);
+  end;
+end;
+
+procedure TNominate.BuildMembersSessionNominations;
+var
+SessionID: integer;
+success: boolean;
+begin
+  // NOTE: fCurrMemberID must be correctly in itialized.
+  FListOfNominatedEvents.Clear;
+  if (fCurrMemberID = 0)  then exit;
+  SessionID := bsSession.DataSet.FieldByName('SessionID').AsInteger;
+  success := SCM.GetMembersSessionNominations(SessionID, fCurrMemberID);
+  if success then
+  begin
+    While not SCM.qrySessionNominations.Eof do
+    begin
+      FListOfNominatedEvents.Add(SCM.qrySessionNominations.FieldByName('EventID').AsInteger);
+      SCM.qrySessionNominations.Next;
+    end;
   end;
 end;
 
@@ -542,7 +547,9 @@ begin
       // filtering state for session visibility determined by checkbox
       Update_SessionVisibility;
 
-      // Safest way to initialise 'stupid' TBindSourceDB links.
+      // Safest way to disconnect TBindSourceDB.
+      // NOTE: if data query or table is empty then this is the only
+      // way to show an empty TComboBox when linked to DB.
       if SCM.tblSwimClub.IsEmpty then
         bsSwimClub.DataSource.Enabled := false
       else
@@ -569,8 +576,7 @@ begin
   UpdateAction(actnDisconnect);
   // Connect button vivibility
   UpdateAction(actnConnect);
-  // Display of layout panels (holding TListView grids).
-
+  // Status : SwimClub name + APP and DB version.
   Status_ConnectionDescription;
 
 end;
@@ -649,6 +655,41 @@ begin
     SCM.Free;
   end;
 
+end;
+
+procedure TNominate.FormKeyDown(Sender: TObject; var Key: Word; var KeyChar:
+    WideChar; Shift: TShiftState);
+var
+s: string;
+begin
+  if (TabControl1.TabIndex = 1) then
+  begin
+    if CharInSet(KeyChar, ['0','1','2','3','4','5','6','7','8','9'])then
+    begin
+      s := txtNumber.Text;
+      s := s + keychar;
+      txtNumber.Text := s;
+      Key := 0;
+    end;
+
+    if (KeyChar = 'C') or (KeyChar = 'c') then
+    begin
+      txtNumber.Text := '';
+    end;
+
+    if (Key = vkBack) or (KeyChar = char(8)) then
+    begin
+      btnBackSpaceClick(Sender);
+      Key := 0;
+    end;
+
+    if (Key = vkReturn) then
+    begin
+      btnEnterClick(Sender);
+      Key := 0;
+    end;
+
+  end;
 end;
 
 function TNominate.GetSCMVerInfo(): String;
@@ -737,7 +778,7 @@ begin
   if (SCM.IsMemberQualified(fCurrMemberID, ADistanceID, AStrokeID)) then
   begin
     AItem.Data['imgQualified'] := ImageList1.Bitmap(ASize, 2);
-    // working but only in the first instance after creation .....
+    // working but only in the first instance of app startup .....
     // AItem.Data['Detail'] := 'QUALIFIED ' +  MyEventDetailString;
   end
   else
@@ -747,6 +788,20 @@ begin
     AItem.Data['imgBigCheck'] := ImageList1.Bitmap(ASize, 1) // checked.
   else
     AItem.Data['imgBigCheck'] := ImageList1.Bitmap(ASize, 0);
+end;
+
+procedure TNominate.lbxNominateUpdatingObjects(const Sender: TObject; const
+    AItem: TListViewItem; var AHandled: Boolean);
+var
+ADistanceID, AStrokeID: integer;
+MyEventDetailString: string;
+begin
+  ADistanceID :=  bsEvent.DataSet.FieldByName('DistanceID').AsInteger;
+  AStrokeID :=  bsEvent.DataSet.FieldByName('StrokeID').AsInteger;
+  MyEventDetailString := bsEvent.DataSet.FieldByName('Detail').AsString;
+  if (SCM.IsMemberQualified(fCurrMemberID, ADistanceID, AStrokeID)) then
+    // works.....
+    AItem.Data['Detail'] := 'QUALIFIED ' +  MyEventDetailString;
 end;
 
 procedure TNominate.LoadFromSettings;
@@ -804,6 +859,9 @@ begin
             // remove the lane data
             SCM.commandDeleteSplit(EntrantID); // REMOVE split data records
             SCM.commandDeleteEntrant(EntrantID); // REMOVE entrant record
+            // TODO: Handle TEAM Events ... Remove the team nomination
+            // SCM.commandDeleteEntrant(EntrantID);
+
           end;
           // remove the nomination record in the database
           SCM.commandDeleteNomination(fCurrmemberID, EventID);
@@ -828,102 +886,26 @@ begin
 end;
 
 procedure TNominate.Refresh_ALL;
-var
-EventID, SessionID, SwimClubID: integer;
 begin
-  if Assigned(SCM) and SCM.qrySession.Active then
+  // DETACH FROM DATABASE.
+  bsSwimClub.DataSource.Enabled := false;
+  bsSession.DataSource.Enabled := false;
+  bsEvent.DataSource.Enabled := false;
+
+  if (Assigned(SCM) and SCM.IsActive) then
   begin
-    SCM.qryEvent.DisableControls;
-    SCM.qrySession.DisableControls;
-    SCM.tblSwimClub.DisableControls;
-    // store the current database record identities
-    EventID := SCM.qryEvent.FieldByName('EventID').AsInteger;
-    SessionID := SCM.qrySession.FieldByName('SessionID').AsInteger;
-    SwimClubID := SCM.tblSwimClub.FieldByName('SwimClubID').AsInteger;
-    SCM.qryEvent.Close;
-    SCM.qrySession.Close;
-    SCM.tblSwimClub.Close;
-    SCM.tblSwimClub.Open;
-    if SCM.tblSwimClub.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateSwimClubID(SwimClubID);
-    End;
+    SCM.Refresh_ALL;
+    if not SCM.tblSwimClub.IsEmpty then
+      bsSwimClub.DataSource.Enabled := true;
+    if not SCM.qrySession.IsEmpty then
+      bsSession.DataSource.Enabled := true;
+    if not SCM.qryEvent.IsEmpty then
+      bsEvent.DataSource.Enabled := true;
 
-    SCM.qrySession.Open;
-    if SCM.qrySession.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateSessionID(SessionID);
-    End;
-
-    SCM.qryEvent.Open;
-    if SCM.qryEvent.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateEventID(EventID);
-    End;
-    SCM.tblSwimClub.EnableControls;
-    SCM.qrySession.EnableControls;
-    SCM.qryEvent.EnableControls;
-  end;
-end;
-
-procedure TNominate.Refresh_Events;
-var
-EventID: integer;
-begin
-  if Assigned(SCM) and SCM.qrySession.Active then
-  begin
-    SCM.qryEvent.DisableControls;
-    EventID := SCM.qryEvent.FieldByName('EventID').AsInteger;
-    SCM.qryEvent.Close;
-    SCM.qryEvent.Open;
-    if SCM.qryEvent.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateEventID(EventID);
-    End;
-    SCM.qryEvent.EnableControls;
-  end;
-end;
-
-procedure TNominate.Refresh_Session;
-var
-SessionID: integer;
-begin
-  if Assigned(SCM) and SCM.qrySession.Active then
-  begin
-    SCM.qrySession.DisableControls;
-    SessionID := SCM.qrySession.FieldByName('SessionID').AsInteger;
-    SCM.qrySession.Close;
-    SCM.qrySession.Open;
-    if SCM.qrySession.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateSessionID(SessionID);
-    End;
-    SCM.qrySession.EnableControls;
-  end;
-end;
-
-procedure TNominate.Refresh_SwimClub;
-var
-SwimClubID: integer;
-begin
-  if Assigned(SCM) and SCM.tblSwimClub.Active then
-  begin
-    SCM.tblSwimClub.DisableControls;
-    SwimClubID := SCM.tblSwimClub.FieldByName('SwimClubID').AsInteger;
-    SCM.tblSwimClub.Close;
-    SCM.tblSwimClub.Open;
-    if SCM.tblSwimClub.Active then
-    Begin
-      lblStatusBar.Text := 'SCM Refreshed.';
-      SCM.LocateSwimClubID(SwimClubID);
-    End;
-    SCM.tblSwimClub.EnableControls;
-  end;
+    lblStatusBar.Text := 'SCM Refreshed.';
+  end
+  else
+    lblStatusBar.Text := '';
 end;
 
 procedure TNominate.SaveToSettings;
@@ -1024,26 +1006,6 @@ begin
   end;
 end;
 
-procedure TNominate.BuildMembersSessionNominations;
-var
-SessionID: integer;
-success: boolean;
-begin
-  // NOTE: fCurrMemberID must be correctly in itialized.
-  FListOfNominatedEvents.Clear;
-  if (fCurrMemberID = 0)  then exit;
-  SessionID := bsSession.DataSet.FieldByName('SessionID').AsInteger;
-  success := SCM.GetMembersSessionNominations(SessionID, fCurrMemberID);
-  if success then
-  begin
-    While not SCM.qrySessionNominations.Eof do
-    begin
-      FListOfNominatedEvents.Add(SCM.qrySessionNominations.FieldByName('EventID').AsInteger);
-      SCM.qrySessionNominations.Next;
-    end;
-  end;
-end;
-
 procedure TNominate.Update_PromptText;
 begin
   if chkboxVerbose.IsChecked then
@@ -1061,7 +1023,6 @@ begin
     txtPostToCompleteMsg.Visible := false;
   end;
 end;
-
 
 procedure TNominate.Update_SessionVisibility;
 begin
