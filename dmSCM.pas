@@ -8,77 +8,103 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLDef, FireDAC.FMXUI.Wait, FireDAC.Stan.Param, FireDAC.DatS,
   FireDAC.DApt.Intf, FireDAC.DApt, Data.DB, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, System.IniFiles, System.IOUtils;
+  FireDAC.Comp.DataSet, System.IniFiles, System.IOUtils, Data.Bind.Components,
+  Data.Bind.DBScope;
 
 type
   TSCM = class(TDataModule)
-    scmConnection: TFDConnection;
-    tblSwimClub: TFDTable;
-    tblSwimClubSwimClubID: TFDAutoIncField;
-    tblSwimClubCaption: TWideStringField;
-    tblSwimClubNickName: TWideStringField;
-    tblSwimClubEmail: TWideStringField;
-    tblSwimClubContactNum: TWideStringField;
-    tblSwimClubWebSite: TWideStringField;
-    tblSwimClubHeatAlgorithm: TIntegerField;
-    tblSwimClubEnableTeamEvents: TBooleanField;
-    tblSwimClubEnableSwimOThon: TBooleanField;
-    tblSwimClubEnableExtHeatTypes: TBooleanField;
-    tblSwimClubNumOfLanes: TIntegerField;
-    tblSwimClubEnableMembershipStr: TBooleanField;
-    tblSwimClubLenOfPool: TIntegerField;
-    dsSwimClub: TDataSource;
-    dsSession: TDataSource;
+    cmdCreateNomination: TFDCommand;
+    cmdDeleteEntrant: TFDCommand;
+    cmdDeleteNomination: TFDCommand;
+    cmdDeleteSplit: TFDCommand;
     dsEvent: TDataSource;
     dsMember: TDataSource;
-    qrySession: TFDQuery;
-    qryEvent: TFDQuery;
-    qryMember: TFDQuery;
-    qryIsQualified_ORG: TFDQuery;
-    qryIsQualified: TFDQuery;
-    qryIsNominated: TFDQuery;
-    cmdDeleteSplit: TFDCommand;
-    cmdDeleteEntrant: TFDCommand;
-    cmdCreateNomination: TFDCommand;
-    cmdDeleteNomination: TFDCommand;
-    qryIsEntrant: TFDQuery;
-    qrySCMSystem: TFDQuery;
     dsSCMSystem: TDataSource;
-
-  private const
-    SCMCONFIGFILENAME = 'SCMConfig.ini';
-
+    dsSession: TDataSource;
+    dsSwimClub: TDataSource;
+    qryEvent: TFDQuery;
+    qryIsEntrant: TFDQuery;
+    qryIsNominated: TFDQuery;
+    qryIsQualified: TFDQuery;
+    qryMember: TFDQuery;
+    qrySCMSystem: TFDQuery;
+    qrySession: TFDQuery;
+    scmConnection: TFDConnection;
+    tblSwimClub: TFDTable;
+    tblSwimClubCaption: TWideStringField;
+    tblSwimClubContactNum: TWideStringField;
+    tblSwimClubEmail: TWideStringField;
+    tblSwimClubEnableExtHeatTypes: TBooleanField;
+    tblSwimClubEnableMembershipStr: TBooleanField;
+    tblSwimClubEnableSwimOThon: TBooleanField;
+    tblSwimClubEnableTeamEvents: TBooleanField;
+    tblSwimClubHeatAlgorithm: TIntegerField;
+    tblSwimClubLenOfPool: TIntegerField;
+    tblSwimClubNickName: TWideStringField;
+    tblSwimClubNumOfLanes: TIntegerField;
+    tblSwimClubSwimClubID: TFDAutoIncField;
+    tblSwimClubWebSite: TWideStringField;
+    qrySessionNominations: TFDQuery;
+    qryEventEventID: TFDAutoIncField;
+    qryEventEventNum: TIntegerField;
+    qryEventSessionID: TIntegerField;
+    qryEventStrokeID: TIntegerField;
+    qryEventDistanceID: TIntegerField;
+    qryEventEventStatusID: TIntegerField;
+    qryMemberMemberID: TFDAutoIncField;
+    qryMemberMembershipNum: TIntegerField;
+    qryMemberMembershipStr: TWideStringField;
+    qryMemberFirstName: TWideStringField;
+    qryMemberLastName: TWideStringField;
+    qryMemberDOB: TSQLTimeStampField;
+    qryMemberIsArchived: TBooleanField;
+    qryMemberIsActive: TBooleanField;
+    qryMemberIsSwimmer: TBooleanField;
+    qryMemberEmail: TWideStringField;
+    qryMemberEnableEmailOut: TBooleanField;
+    qryMemberGenderID: TIntegerField;
+    qryMemberSwimClubID: TIntegerField;
+    qryMemberFName: TWideStringField;
+    qrySessionSessionID: TFDAutoIncField;
+    qrySessionSessionStart: TSQLTimeStampField;
+    qrySessionSwimClubID: TIntegerField;
+    qrySessionSessionStatusID: TIntegerField;
+    qrySessionSessionStatusStr: TStringField;
+    qrySessionCaption: TWideStringField;
+    qrySessionSessionStartStr: TWideStringField;
+    qrySessionSessionDetailStr: TWideStringField;
+    qryEventTitle: TWideStringField;
+    qryEventDetail: TWideStringField;
+    procedure DataModuleCreate(Sender: TObject);
   private
-    { Private declarations }
-    FIsActive: Boolean;
+  const
+    SCMCONFIGFILENAME = 'SCMConfig.ini';
+  var
     fDBModel, fDBVersion, fDBMajor, fDBMinor: integer;
-
+    FIsActive: Boolean;
   public
-    { Public declarations }
-    function IsMemberNominated(MemberID, EventID: Integer): Boolean;
+    procedure ActivateTable();
+    // SQL commands .
+    procedure commandCreateNomination(MemberID, EventID: Integer);
+    procedure commandDeleteEntrant(EntrantID: Integer);
+    procedure commandDeleteNomination(MemberID, EventID: Integer);
+    procedure commandDeleteSplit(EntrantID: Integer);
+    procedure DeActivateTable();
+    procedure Refresh_ALL;
+    procedure Refresh_Events;
+    function GetDBVerInfo: string;
+    function GetMemberFName(MemberID: Integer): String;
+    function GetMemberID(MemberShipNumber: Integer): Integer;
     function IsMemberEntrant(MemberID, EventID: Integer): Integer;
+    function IsMemberNominated(MemberID, EventID: Integer): Boolean;
+    function GetMembersSessionNominations(SessionID, MemberID: Integer): Boolean;
     function IsMemberQualified(MemberID, DistanceID, StrokeID: Integer)
       : Boolean;
     function IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
-    function GetMemberID(MemberShipNumber: Integer): Integer;
-    function GetMemberFName(MemberID: Integer): String;
-    function GetDBVerInfo: string;
     function LocateEventID(EventID: Integer): Boolean;
-    // SQL command
-    procedure commandCreateNomination(MemberID, EventID: Integer);
-    procedure commandDeleteNomination(MemberID, EventID: Integer);
-    procedure commandDeleteSplit(EntrantID: Integer);
-    procedure commandDeleteEntrant(EntrantID: Integer);
-    // Tempory connection methods
-//    procedure SimpleMakeTemporyFDConnection(Server, User, Password: String;
-//      OsAuthent: Boolean);
-//    procedure SimpleSaveSettingString(ASection, AName, AValue: String);
-//    procedure SimpleLoadSettingString(ASection, AName: String; var AValue: String);
-
+    function LocateSwimClubID(SwimClubID: Integer): Boolean;
+    function LocateSessionID(SessionID: Integer): Boolean;
     property IsActive: Boolean read FIsActive;
-    procedure ActivateTable();
-    procedure DeActivateTable();
-
   end;
 
 var
@@ -91,6 +117,12 @@ implementation
 
 uses
   System.Variants;
+
+procedure TSCM.DataModuleCreate(Sender: TObject);
+begin
+  if scmConnection.Connected then
+    scmConnection.Connected := false;
+end;
 
 { TSCM }
 
@@ -147,9 +179,9 @@ end;
 procedure TSCM.DeActivateTable;
 begin
   FIsActive := false;
-  qryEvent.Close;
-  qrySession.Close;
-  tblSwimClub.Close;
+  if qryEvent.Active then qryEvent.Close;
+  if qrySession.Active then qrySession.Close;
+  if tblSwimClub.Active then tblSwimClub.Close;
 end;
 
 function TSCM.GetDBVerInfo: string;
@@ -254,7 +286,6 @@ begin
     qryIsNominated.Close;
 end;
 
-
 function TSCM.IsMemberQualified(MemberID, DistanceID, StrokeID: Integer): Boolean;
 begin
   result := false;
@@ -282,22 +313,21 @@ begin
   end;
 end;
 
-function TSCM.IsValidMembershipNum(MemberShipNumber: Integer): Boolean;
+function TSCM.IsValidMembershipNum(MemberShipNumber: integer): Boolean;
 var
-  rtn: Integer;
+  rtn: integer;
 begin
   result := false;
   if scmConnection.Connected then
   begin
-    rtn := scmConnection.ExecSQLScalar
-      ('USE SwimClubMeet; SET NOCOUNT ON; Select MembershipNum from Member where MembershipNum = :Num',
-      [MemberShipNumber]);
+    rtn := scmConnection.ExecSQLScalar('USE SwimClubMeet; SET NOCOUNT ON; ' +
+      'SELECT MembershipNum FROM Member WHERE (MembershipNum = :Num) AND ' +
+      '(IsActive=1) AND (IsSwimmer=1) AND (IsArchived=0)', [MemberShipNumber]);
+
     if rtn > 0 then
       result := True;
   end;
 end;
-
-{$REGION 'LOCATE SPECIFIC RECORD'}
 
 function TSCM.LocateEventID(EventID: Integer): Boolean;
 var
@@ -320,82 +350,113 @@ begin
 
 end;
 
-{$ENDREGION}
-
-{
-procedure TSCM.SimpleLoadSettingString(ASection, AName: String; var AValue: String);
+function TSCM.LocateSessionID(SessionID: Integer): Boolean;
 var
-  ini: TIniFile;
-begin
-  // Note: OneDrive enabled: 'Personal'
-  // The routine TPath.GetDocumentsPath normally returns ...
-  // C:\Users\<username>\Documents (Windows Vista or later)
-  // but is instead mapped to C:\Users\<username>\OneDrive\Documents.
-  //
-  ini := TIniFile.Create(TPath.GetDocumentsPath + PathDelim +
-    SCMCONFIGFILENAME);
-  try
-    AValue := ini.ReadString(ASection, AName, '');
-  finally
-    ini.Free;
-  end;
+  LocateSuccess: Boolean;
+  SearchOptions: TLocateOptions;
 
+begin
+  result := false;
+  if not qrySession.Active then
+    exit;
+  SearchOptions := [loPartialKey];
+  try
+    LocateSuccess := qrySession.Locate('SessionID', VarArrayOf([SessionID]),
+      SearchOptions);
+  except
+    on E: Exception do
+      LocateSuccess := false
+  end;
+  result := LocateSuccess;
 end;
 
-procedure TSCM.SimpleMakeTemporyFDConnection(Server, User, Password: String;
-  OsAuthent: Boolean);
+function TSCM.LocateSwimClubID(SwimClubID: Integer): Boolean;
 var
-  AValue, ASection, AName: String;
+  LocateSuccess: Boolean;
+  SearchOptions: TLocateOptions;
+
 begin
+  result := false;
+  if not tblSwimClub.Active then
+    exit;
+  SearchOptions := [loPartialKey];
+  try
+    LocateSuccess := tblSwimClub.Locate('SwimClubID', VarArrayOf([SwimClubID]),
+      SearchOptions);
+  except
+    on E: Exception do
+      LocateSuccess := false
+  end;
+  result := LocateSuccess;
+end;
 
-  if (scmConnection.Connected) then
-    scmConnection.Connected := false;
-
-  scmConnection.Params.Clear();
-  scmConnection.Params.Add('Server=' + Server);
-  scmConnection.Params.Add('DriverID=MSSQL');
-  scmConnection.Params.Add('Database=SwimClubMeet');
-  scmConnection.Params.Add('User_name=' + User);
-  scmConnection.Params.Add('Password=' + Password);
-  if OsAuthent then
-    AValue := 'Yes'
-  else
-    AValue := 'No';
-  scmConnection.Params.Add('OSAuthent=' + AValue);
-  scmConnection.Params.Add('Mars=yes');
-  scmConnection.Params.Add('MetaDefSchema=dbo');
-  scmConnection.Params.Add('ExtendedMetadata=False');
-  scmConnection.Params.Add('ApplicationName=scmMarshall');
-  scmConnection.Connected := True;
-
-  // ON SUCCESS - Save connection details.
-  if scmConnection.Connected Then
+procedure TSCM.Refresh_ALL;
+var
+EventID, SessionID, SwimClubID: integer;
+begin
+  if IsActive then
   begin
-    ASection := 'MSSQL_SwimClubMeet';
-    AName := 'Server';
-    SimpleSaveSettingString(ASection, AName, Server);
-    AName := 'User';
-    SimpleSaveSettingString(ASection, AName, User);
-    AName := 'Password';
-    SimpleSaveSettingString(ASection, AName, Password);
-    AName := 'OSAuthent';
-    SimpleSaveSettingString(ASection, AName, AValue);
-  end
-end;
+    qryEvent.DisableControls;
+    qrySession.DisableControls;
+    tblSwimClub.DisableControls;
+    // store the current database record identities
+    EventID := qryEvent.FieldByName('EventID').AsInteger;
+    SessionID := qrySession.FieldByName('SessionID').AsInteger;
+    SwimClubID := tblSwimClub.FieldByName('SwimClubID').AsInteger;
+    qryEvent.Close;
+    qrySession.Close;
+    tblSwimClub.Close;
 
-procedure TSCM.SimpleSaveSettingString(ASection, AName, AValue: String);
-var
-  ini: TIniFile;
-begin
-  ini := TIniFile.Create(TPath.GetDocumentsPath + PathDelim +
-    SCMCONFIGFILENAME);
-  try
-    ini.WriteString(ASection, AName, AValue);
-  finally
-    ini.Free;
+    tblSwimClub.Open;
+    if tblSwimClub.Active then
+      LocateSwimClubID(SwimClubID);
+
+    qrySession.Open;
+    if qrySession.Active then
+      LocateSessionID(SessionID);
+
+    qryEvent.Open;
+    if qryEvent.Active then
+      LocateEventID(EventID);
+
+    tblSwimClub.EnableControls;
+    qrySession.EnableControls;
+    qryEvent.EnableControls;
   end;
-
 end;
-}
+
+procedure TSCM.Refresh_Events;
+var
+EventID: integer;
+begin
+  if IsActive then
+  begin
+    qryEvent.DisableControls;
+    EventID := qryEvent.FieldByName('EventID').AsInteger;
+    qryEvent.Close;
+    qryEvent.Open;
+    if qryEvent.Active then
+      LocateEventID(EventID);
+    qryEvent.EnableControls;
+  end;
+end;
+
+function TSCM.GetMembersSessionNominations(SessionID, MemberID: Integer): Boolean;
+begin
+  result := false;
+  if scmConnection.Connected then
+  begin
+    if qrySessionNominations.Active then
+      qrySessionNominations.Close;
+
+    qrySessionNominations.ParamByName('MEMBERID').AsInteger := MemberID;
+    qrySessionNominations.ParamByName('SESSIONID').AsInteger := SessionID;
+    qrySessionNominations.Prepare;
+
+    qrySessionNominations.Open;
+    if qrySessionNominations.Active then
+        result := True;
+  end;
+end;
 
 end.
